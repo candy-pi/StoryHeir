@@ -1,0 +1,10 @@
+{
+  "name": "tts",
+  "version": "1.0.0",
+  "description": "故事朗读（百炼 Qwen-TTS 语音合成）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3",
+    "node-fetch": "^2.7.0"
+  }
+}

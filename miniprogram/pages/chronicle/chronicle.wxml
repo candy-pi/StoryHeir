@@ -1,0 +1,80 @@
+<!-- 家族编年志：多篇故事按年代汇编成册 -->
+<view class="page-pad safe-bottom chronicle">
+
+  <!-- 加载骨架：ready 由 js 置位前显示，避免空白像卡死 -->
+  <view class="chrono-skel" wx:if="{{!ready}}">
+    <view class="skel skel-cover"></view>
+    <view class="skel skel-line"></view>
+    <view class="skel skel-line short"></view>
+    <view class="skel skel-card"></view>
+    <view class="skel skel-card"></view>
+  </view>
+
+  <block wx:elif="{{book}}">
+    <!-- 卷首封面 -->
+    <view class="book-cover">
+      <view class="cover-mark">志</view>
+      <view class="book-title">家族编年志</view>
+      <view class="book-sub" wx:if="{{book.span}}">{{book.span}} · 共 {{book.count}} 篇</view>
+      <view class="book-sub" wx:else>共 {{book.count}} 篇往事</view>
+      <view class="book-slogan">把这些散落的往事，汇成一本可以传下去的书</view>
+      <view class="book-values" wx:if="{{valuesText}}">家风 · {{valuesText}}</view>
+    </view>
+
+    <!-- 家族时间线：横向拨动，一节点一篇故事；点节点看详情 -->
+    <view class="timeline-card" wx:if="{{book.timeline.length}}">
+      <view class="timeline-cap">家族时间线</view>
+      <scroll-view scroll-x scroll-with-animation class="timeline-scroll">
+        <view class="timeline-track">
+          <view class="tl-node" wx:for="{{book.timeline}}" wx:key="_id" hover-class="press-down" bindtap="goToStory" data-id="{{item._id}}">
+            <view class="tl-year">{{item.yearText}}</view>
+            <view class="tl-axis">
+              <view class="tl-line"></view>
+              <view class="tl-dot"></view>
+            </view>
+            <view class="tl-title">{{item.title}}</view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 目录：年代章节一览 -->
+    <view class="toc">
+      <view class="toc-title">卷目</view>
+      <view class="toc-line" wx:for="{{book.chapters}}" wx:key="decade">
+        <text>{{item.decade}}</text>
+        <text class="toc-count">{{item.stories.length}} 篇</text>
+      </view>
+    </view>
+
+    <!-- 正文：按年代分章，章标题随年代配色 -->
+    <view class="chapter" wx:for="{{book.chapters}}" wx:for-item="ch" wx:key="decade">
+      <view class="chapter-head {{ch.toneClass}}">
+        <text class="chapter-name">{{ch.decade}}</text>
+        <text class="chapter-range">{{ch.range}}</text>
+      </view>
+      <view class="chron-story" wx:for="{{ch.stories}}" wx:for-item="st" wx:key="_id" hover-class="press-down" bindtap="goToStory" data-id="{{st._id}}">
+        <image wx:if="{{st.photoFileID}}" class="chron-photo" src="{{st.photoFileID}}" mode="aspectFill" />
+        <view class="chron-body {{st.photoFileID ? '' : 'no-photo'}}">
+          <view class="chron-title">{{st.title}}</view>
+          <view class="chron-year">{{st.yearText}}</view>
+          <view class="chron-preview">{{st.preview}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部操作：做成海报（生成图片可发群/朋友圈）为主，分享小程序卡片为次 -->
+    <view class="share-actions">
+      <button class="btn-primary" hover-class="press-down" bindtap="drawPoster">做成海报分享</button>
+      <button class="btn-secondary" hover-class="press-down" open-type="share">分享到家族群</button>
+    </view>
+
+    <!-- 离屏海报画布：移出屏幕不可见，但保留尺寸供 canvas 2d 绘制后导出图片 -->
+    <canvas type="2d" id="posterCanvas" class="poster-canvas"></canvas>
+  </block>
+
+  <view class="empty" wx:elif="{{empty}}">
+    <text>还没有家族故事，先去访谈记录几段吧</text>
+  </view>
+
+</view>

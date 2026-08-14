@@ -1,0 +1,83 @@
+<!-- 访谈页：照片（可选）→ AI 提问 → 老人语音或文字作答 → 追问 -->
+<view class="page-pad safe-bottom interview">
+
+  <!-- 老照片区：访谈的引子，可选（很多老故事并没有照片） -->
+  <view class="photo-area" hover-class="press-down" bindtap="onChoosePhoto">
+    <block wx:if="{{photoTempPath}}">
+      <image class="photo" src="{{photoTempPath}}" mode="aspectFill" />
+    </block>
+    <block wx:else>
+      <view class="photo-placeholder">
+        <text class="title-lg">选一张老照片（可选）</text>
+        <text class="hint">有照片，AI 记者会从照片问起；没有也行，直接聊</text>
+      </view>
+    </block>
+  </view>
+
+  <!-- 无照片启动入口：没选照片也能开始，走兜底开场 -->
+  <view class="start-bar" wx:if="{{!photoTempPath && messages.length === 0}}">
+    <button class="btn-primary" hover-class="press-down" bindtap="onStartNoPhoto" disabled="{{busy}}">没有照片，直接开始聊聊</button>
+  </view>
+
+  <!-- 话题脚手架：无照片开场前给老人话题引子，点一下替他开口 -->
+  <view class="topics" wx:if="{{!photoTempPath && messages.length === 0}}">
+    <view class="topics-cap">不知道讲什么？挑一个开头</view>
+    <scroll-view scroll-x class="topics-scroll" enhanced show-scrollbar="{{false}}">
+      <view class="topic-chip" hover-class="press-down" wx:for="{{topics}}" wx:key="label" bindtap="onPickTopic" data-text="{{item.text}}">{{item.label}}</view>
+    </scroll-view>
+  </view>
+
+  <!-- 消息流 -->
+  <scroll-view class="msg-list" scroll-y scroll-into-view="{{toView}}" enhanced show-scrollbar="{{false}}">
+    <view wx:for="{{messages}}" wx:key="index" id="msg-{{index}}"
+          class="bubble {{item.role}}">
+      <image wx:if="{{item.photoFileID}}" class="bubble-photo" src="{{item.photoFileID}}" mode="aspectFill" />
+      <text wx:if="{{!item.loading}}">{{item.text}}</text>
+      <text wx:else class="typing">正在思考…</text>
+    </view>
+    <view wx:if="{{messages.length === 0 && photoTempPath}}" class="empty-hint">
+      AI 记者正在看这张照片，马上就来问你…
+    </view>
+  </scroll-view>
+
+  <!-- 生成家族故事入口：聊出至少一问一答后出现 -->
+  <view class="gen-story" wx:if="{{messages.length >= 2}}">
+    <picker class="style-pick" mode="selector" range="{{styleOptions}}" value="{{styleIndex}}" bindchange="onStyleChange">
+      <text>故事风格：{{styleOptions[styleIndex]}} ▾</text>
+    </picker>
+    <button class="btn-secondary" hover-class="press-down" bindtap="onGenStory" disabled="{{busy}}">生成家族故事</button>
+  </view>
+
+  <!-- 作答区：语音 / 文字 两种方式 -->
+  <view class="input-bar">
+    <!-- 访谈进行中常驻：讲到哪儿都能补一张照片，AI 即时看新图追问 -->
+    <view class="add-photo-bar" wx:if="{{messages.length > 0}}" hover-class="press-down" bindtap="onAddPhoto">+ 讲到这儿，加一张照片</view>
+    <view class="mode-tabs">
+      <view class="mode-tab {{inputMode==='voice'?'on':''}}" hover-class="press-down" bindtap="switchMode" data-m="voice">语音讲述</view>
+      <view class="mode-tab {{inputMode==='text'?'on':''}}" hover-class="press-down" bindtap="switchMode" data-m="text">文字输入</view>
+    </view>
+
+    <!-- 语音模式 -->
+    <block wx:if="{{inputMode==='voice'}}">
+      <picker class="dialect-pick" mode="selector" range="{{dialectOptions}}" value="{{dialectIndex}}" bindchange="onDialectChange">
+        <text>识别语言：{{dialectOptions[dialectIndex]}} ▾</text>
+      </picker>
+      <view class="record-status">
+        <text wx:if="{{recording}}">正在录音 · {{recordText}}</text>
+        <text wx:elif="{{busy}}">正在识别，稍等一下…</text>
+        <text wx:else>点一下按钮，开始讲故事</text>
+      </view>
+      <view class="record-btn {{recording ? 'recording' : ''}} {{busy ? 'disabled' : ''}}"
+            hover-class="press-down" bindtap="onToggleRecord">
+        <text>{{recording ? '结束' : '开始'}}</text>
+      </view>
+    </block>
+
+    <!-- 文字模式：纸质版故事可直接打字或粘贴一大段 -->
+    <block wx:else>
+      <textarea class="text-input" placeholder="写下或粘贴一段往事，讲完点发送" value="{{textInput}}"
+                bindinput="onTextInput" maxlength="-1" auto-height show-confirm-bar="{{false}}" />
+      <button class="btn-primary text-send" hover-class="press-down" bindtap="onSendText" disabled="{{busy || !textInput}}">发送</button>
+    </block>
+  </view>
+</view>

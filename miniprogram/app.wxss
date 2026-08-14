@@ -1,0 +1,108 @@
+/* app.wxss —— 全局适老化样式
+   设计原则：大字号、高对比、大触控区、温暖传承感配色
+   老人视力与操作精度下降，所有可点元素必须足够大、间距必须足够宽 */
+
+page {
+  /* 基础字号放大到 34rpx（普通小程序多用 28rpx，对老人偏小） */
+  font-size: 34rpx;
+  color: #2B2218;            /* 墨褐主文字，与暖米背景高对比 */
+  background-color: #FBF7F0; /* 暖米背景，比纯白更柔和、更"老物件"质感 */
+  line-height: 1.7;
+  font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+}
+
+/* 通用大标题 */
+.title-xl { font-size: 52rpx; font-weight: 700; color: #2B2218; }
+.title-lg { font-size: 44rpx; font-weight: 600; color: #2B2218; }
+
+/* 主色：赭石红棕，沉稳且有传承感，用于关键按钮与强调 */
+.text-accent { color: #A0522D; }
+.bg-accent { background-color: #A0522D; color: #FFFFFF; }
+
+/* 主按钮：触控高度 104rpx（远超 88rpx 无障碍下限），圆角，无细边 */
+.btn-primary {
+  width: 100%;
+  height: 104rpx;
+  line-height: 104rpx;
+  border-radius: 52rpx;
+  background-color: #A0522D;
+  color: #FFFFFF;
+  font-size: 38rpx;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+  /* border-box + 显式 padding：压住微信原生 <button> 自带的左右内边距，
+     否则 width:100% 会被原生 padding 撑超屏宽，长文案（如"继续完善这个故事"）被挤截断 */
+  box-sizing: border-box;
+  padding: 0 24rpx;
+}
+.btn-primary[disabled] { background-color: #CBB89A; color: #FFFFFF; }
+
+/* 次按钮：描边样式，与主按钮区分层级 */
+.btn-secondary {
+  width: 100%;
+  height: 104rpx;
+  line-height: 100rpx;
+  border-radius: 52rpx;
+  background-color: #FFFFFF;
+  color: #A0522D;
+  font-size: 38rpx;
+  border: 4rpx solid #A0522D;
+  text-align: center;
+  box-sizing: border-box;
+  padding: 0 24rpx;
+}
+
+/* 卡片容器：承载故事、问答等内容 */
+.card {
+  background-color: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 36rpx;
+  box-shadow: 0 4rpx 16rpx rgba(43, 34, 24, 0.06);
+}
+
+/* 通用页面内边距，保证左右留白充足 */
+.page-pad { padding: 40rpx 32rpx; }
+
+/* 安全区域底部留白，避免按钮被 Home Indicator 遮挡 */
+.safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 40rpx); }
+
+/* 通用按压态：配合 hover-class="press-down" 使用。
+   老人操作精度低，必须有明确的"点到了"反馈；只动 transform/opacity（GPU 加速、不触发重排），0.15s 回弹 */
+.press-down { transform: scale(0.97); opacity: 0.9; transition: transform .15s ease, opacity .15s ease; }
+
+/* 传承印章：朱红方印阴刻白字、轻微倾斜，用于首页与编年志封面，定调家族传承感 */
+.seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 88rpx;
+  height: 88rpx;
+  background-color: #B23A28;
+  color: #FBF7F0;
+  border-radius: 14rpx;
+  font-size: 44rpx;
+  font-weight: 700;
+  transform: rotate(-6deg);
+  box-shadow: 0 4rpx 12rpx rgba(178, 58, 40, 0.3);
+}
+
+/* 骨架占位：加载中用灰块模拟内容结构 + 扫光动效，比"加载中"文字更像"马上要出来"，老人不会以为卡死 */
+.skel {
+  background-color: #efe7d8;
+  border-radius: 12rpx;
+  position: relative;
+  overflow: hidden;
+}
+.skel::after {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}

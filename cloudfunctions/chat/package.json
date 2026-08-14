@@ -1,0 +1,10 @@
+{
+  "name": "chat",
+  "version": "1.0.0",
+  "description": "家族记者访谈对话（百炼 GLM + Qwen-VL 看图开口）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3",
+    "node-fetch": "^2.7.0"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/interview/interview",
+    "pages/story/story",
+    "pages/chronicle/chronicle"
+  ],
+  "window": {
+    "backgroundColor": "#FBF7F0",
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#FBF7F0",
+    "navigationBarTitleText": "传家志",
+    "navigationBarTextStyle": "black",
+    "enablePullDownRefresh": false
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

@@ -1,0 +1,10 @@
+{
+  "name": "genStory",
+  "version": "1.0.0",
+  "description": "家族故事生成 + 人物关系抽取 + 落库（百炼 GLM）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3",
+    "node-fetch": "^2.7.0"
+  }
+}

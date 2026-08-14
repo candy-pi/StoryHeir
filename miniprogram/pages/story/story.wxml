@@ -1,0 +1,123 @@
+<!-- 关系详情弹层：点边后从底部滑出，展示两人关系与故事里同框的情节。独立层，不参与下方三态连锁 -->
+<view class="rel-popup" wx:if="{{relPopup}}">
+  <view class="rel-popup-mask" bindtap="closeRelPopup"></view>
+  <view class="rel-popup-box">
+    <view class="rel-popup-title">{{relPopup.a}} 与 {{relPopup.b}}</view>
+    <view class="rel-popup-relation">关系 · {{relPopup.label || '未注明'}}</view>
+    <block wx:if="{{relPopup.co.length}}">
+      <view class="rel-popup-sub">他们在故事里同框：</view>
+      <view class="rel-popup-co" wx:for="{{relPopup.co}}" wx:key="index">{{item}}</view>
+    </block>
+    <view class="rel-popup-empty" wx:else>故事里没有特别写到他俩的同框情节</view>
+    <button class="btn-primary rel-popup-btn" hover-class="press-down" bindtap="closeRelPopup">知道了</button>
+  </view>
+</view>
+
+<!-- 故事展示页 -->
+<view class="page-pad safe-bottom story" wx:if="{{story}}">
+
+  <!-- 编辑模式：只改标题与正文，其余隐藏聚焦 -->
+  <block wx:if="{{editing}}">
+    <input class="edit-title" placeholder="故事标题" value="{{editTitle}}" bindinput="onTitleInput" />
+    <textarea class="edit-content" placeholder="故事正文" value="{{editContent}}" bindinput="onEditInput" />
+    <view class="edit-ops">
+      <button class="btn-primary" hover-class="press-down" bindtap="onSaveEdit">保存</button>
+      <view class="edit-cancel" hover-class="press-down" bindtap="onCancelEdit">取消</view>
+    </view>
+  </block>
+
+  <!-- 查看模式 -->
+  <block wx:else>
+    <view class="story-title">{{story.title}}</view>
+    <view class="story-meta">由 AI 记者整理{{styleLabel ? ' · ' + styleLabel : ''}}</view>
+
+    <!-- 老照片：多图轮播、单图自适应；支持一键 AI 上色（黑白变彩色，目前为主图） -->
+    <view wx:if="{{photos.length}}" class="story-photo-wrap">
+      <!-- 多图：swiper 固定高轮播，等高整齐 -->
+      <swiper wx:if="{{photos.length > 1}}" class="photo-swiper"
+              indicator-dots indicator-color="rgba(160,82,45,0.25)" indicator-active-color="#A0522D" circular autoplay="{{false}}">
+        <swiper-item wx:for="{{photos}}" wx:key="*this">
+          <view class="story-photo-box">
+            <image class="story-photo" src="{{item === story.photoFileID ? (colorizedFileID || item) : item}}" mode="aspectFill" />
+          </view>
+        </swiper-item>
+      </swiper>
+      <!-- 单图：不走 swiper，保留 widthFix 自适应高度、不裁切 -->
+      <view wx:else class="story-photo-box">
+        <image class="story-photo" src="{{colorizedFileID || photos[0]}}" mode="widthFix" />
+      </view>
+      <button wx:if="{{!colorizedFileID}}" class="btn-primary" hover-class="press-down" loading="{{colorizing}}" bindtap="onColorize">让这张老照片变彩色</button>
+      <view wx:else class="colorized-hint">AI 已为首页老照片上色</view>
+    </view>
+
+    <!-- 人物关系图（网状） -->
+    <view class="graph-card" wx:if="{{story.persons.length}}">
+      <view class="graph-title">人物关系</view>
+      <!-- 弹关系详情时隐藏 canvas：canvas 是原生组件、层级高于普通弹层会穿透漂浮，hidden 消除遮挡；关闭后画面保留无需重绘 -->
+      <canvas type="2d" id="graphCanvas" bindtouchstart="onGraphTap" class="graph-canvas" hidden="{{!!relPopup}}"></canvas>
+    </view>
+
+    <view class="story-content">{{story.content}}</view>
+
+    <!-- 家人共建：补充 / 校对 / 认人 -->
+    <view class="contrib-card">
+      <view class="contrib-title">家人共建</view>
+
+      <view class="contrib-item" wx:for="{{contributions}}" wx:key="_id">
+        <view class="contrib-head">
+          <text class="contrib-nick">{{item.nickName}}</text>
+          <text class="contrib-tag contrib-tag-{{item.type}}">{{item.typeLabel}}</text>
+          <text class="contrib-time">{{item.timeText}}</text>
+        </view>
+        <view class="contrib-content" wx:if="{{item.type==='identify'}}">认「{{item.personName}}」：{{item.content}}</view>
+        <view class="contrib-content" wx:else>{{item.content}}</view>
+      </view>
+      <view class="contrib-empty" wx:if="{{!contributions.length}}">还没有家人补充，来补充第一个吧</view>
+
+      <!-- 发布区 -->
+      <view class="contrib-form">
+        <input class="nick-input" type="nickname" placeholder="怎么称呼您？" value="{{myNick}}" bindblur="onNickBlur" />
+        <view class="type-row">
+          <view class="type-btn {{ctype==='supplement'?'on':''}}" hover-class="press-down" bindtap="setType" data-t="supplement">补充</view>
+          <view class="type-btn {{ctype==='correct'?'on':''}}" hover-class="press-down" bindtap="setType" data-t="correct">校对</view>
+          <view class="type-btn {{ctype==='identify'?'on':''}}" hover-class="press-down" bindtap="setType" data-t="identify">认人</view>
+        </view>
+        <picker wx:if="{{ctype==='identify'}}" range="{{personNames}}" bindchange="onPersonChange">
+          <view class="person-pick">{{cpersonName || '选择故事里的人物'}}</view>
+        </picker>
+        <textarea class="content-input" placeholder="{{ctype==='correct'?'哪里写错了，说说真实情况':'写下您知道的'}}" value="{{ccontent}}" bindinput="onContentInput" />
+        <button class="btn-primary" hover-class="press-down" bindtap="publishContribution">提交</button>
+      </view>
+    </view>
+
+    <!-- 底部操作区：续访为主操作独占一行，朗读 / 分享为描边次按钮并排，建立主次层级 -->
+    <view class="story-actions">
+      <!-- 续访：让小传再聊一轮，把故事讲得更完整（直接更新本故事） -->
+      <button class="btn-primary" hover-class="press-down" bindtap="onResume">继续完善这个故事</button>
+      <view class="action-row">
+        <button class="btn-ghost" hover-class="press-down" bindtap="onRead">{{reading ? '暂停朗读' : '朗读故事'}}</button>
+        <button class="btn-ghost" hover-class="press-down" open-type="share">分享到家族群</button>
+      </view>
+    </view>
+
+    <!-- 故事操作：编辑 / 删除（仅创建者自己的故事可改可删；非创建者点会被权限拦截） -->
+    <view class="story-ops">
+      <view class="story-op" hover-class="press-down" bindtap="onEdit">编辑</view>
+      <view class="story-op danger" hover-class="press-down" bindtap="onDelete">删除</view>
+    </view>
+  </block>
+</view>
+
+<!-- 加载骨架：story 填充前显示，避免空白像卡死 -->
+<view class="page-pad safe-bottom story-skel" wx:elif="{{loading}}">
+  <view class="skel skel-title"></view>
+  <view class="skel skel-line short"></view>
+  <view class="skel skel-photo"></view>
+  <view class="skel skel-para"></view>
+  <view class="skel skel-para"></view>
+</view>
+
+<!-- 空态：loading 完成且无 story -->
+<view class="page-pad empty" wx:else>
+  <text>还没有生成故事</text>
+</view>

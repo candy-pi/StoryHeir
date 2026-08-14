@@ -1,0 +1,10 @@
+{
+  "name": "restore",
+  "version": "1.0.0",
+  "description": "老照片 AI 上色（万相 wanx2.1-imageedit colorization）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3",
+    "node-fetch": "^2.7.0"
+  }
+}

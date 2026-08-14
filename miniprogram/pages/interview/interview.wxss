@@ -1,0 +1,193 @@
+.interview {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* 老照片区 */
+.photo-area {
+  width: 100%;
+  height: 360rpx;
+  border-radius: 24rpx;
+  overflow: hidden;
+  background-color: #fff;
+}
+.photo { width: 100%; height: 100%; }
+.photo-placeholder {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40rpx;
+}
+.photo-placeholder .hint {
+  color: #6e6354;
+  margin-top: 16rpx;
+  font-size: 30rpx;
+}
+
+/* 消息流 */
+.msg-list {
+  flex: 1;
+  margin: 32rpx 0;
+  min-height: 300rpx;
+}
+.bubble {
+  max-width: 80%;
+  padding: 28rpx 32rpx;
+  border-radius: 32rpx;
+  margin-bottom: 24rpx;
+  font-size: 36rpx;
+  line-height: 1.7;
+}
+.bubble.assistant {
+  background-color: #fff;
+  color: #2B2218;
+  border-bottom-left-radius: 8rpx;
+}
+.bubble.user {
+  background-color: #A0522D;
+  color: #fff;
+  border-bottom-right-radius: 8rpx;
+  margin-left: auto;
+}
+/* 带图消息气泡内的缩略图：补图时显示在文字上方，宽满气泡、圆角 */
+.bubble-photo {
+  width: 100%;
+  height: 280rpx;
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+  display: block;
+}
+/* "正在思考…"加深 + 轻呼吸动效，让等待有活感（原 #a89b88 太浅且静止，老人以为卡住） */
+.typing { color: #6e6354; animation: typing-fade 1.2s ease-in-out infinite; }
+@keyframes typing-fade { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+.empty-hint { text-align: center; color: #6e6354; padding: 40rpx; font-size: 30rpx; }
+
+/* 作答区容器：语音 / 文字两种方式共用 */
+.input-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20rpx;
+}
+
+/* 补图入口：访谈中常驻，虚线描边与实心按钮区分，提示"可补充" */
+.add-photo-bar {
+  width: 100%;
+  box-sizing: border-box;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  border-radius: 48rpx;
+  border: 2rpx dashed #c9a86a;
+  background-color: #fff;
+  color: #A0522D;
+  font-size: 32rpx;
+  margin-bottom: 24rpx;
+}
+
+/* 无照片时的启动入口 */
+.start-bar { margin-bottom: 24rpx; }
+
+/* 语音 / 文字 切换 */
+.mode-tabs {
+  display: flex;
+  margin-bottom: 24rpx;
+  border-radius: 52rpx;
+  overflow: hidden;
+  border: 2rpx solid #e3d6c3;
+}
+.mode-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 88rpx;        /* 加高至无障碍触摸下限（原约 62rpx，老人易点偏） */
+  padding: 0 48rpx;
+  font-size: 30rpx;
+  color: #5b5145;
+}
+.mode-tab.on {
+  background-color: #A0522D;
+  color: #fff;
+}
+
+/* 文字输入：纸质版故事可能较长，不限字数、自适应高度 */
+.text-input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 180rpx;
+  padding: 28rpx;
+  border-radius: 24rpx;
+  background-color: #fff;
+  font-size: 34rpx;
+  line-height: 1.7;
+  color: #2B2218;
+  margin-bottom: 20rpx;
+}
+.text-send { margin-bottom: 24rpx; }
+.dialect-pick {
+  margin-bottom: 24rpx;
+  font-size: 30rpx;
+  color: #5b5145;
+}
+.record-status {
+  font-size: 32rpx;
+  color: #5b5145;
+  margin-bottom: 28rpx;
+}
+/* 录音大圆钮：录音中外扩光圈脉动，给老人明确的"正在录"反馈（原仅换色，老人不确定在不在录） */
+.record-btn {
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 50%;
+  background-color: #A0522D;
+  color: #fff;
+  font-size: 40rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.record-btn.recording {
+  background-color: #C0392B;
+  animation: rec-pulse 1.4s ease-out infinite;
+}
+@keyframes rec-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0.5); }
+  100% { box-shadow: 0 0 0 36rpx rgba(192, 57, 43, 0); }
+}
+.record-btn.disabled { background-color: #CBB89A; }
+
+.gen-story { margin-bottom: 24rpx; }
+.style-pick {
+  margin-bottom: 20rpx;
+  font-size: 32rpx;
+  color: #5b5145;
+}
+
+/* 话题脚手架：无照片开场前的引子 chip 行 */
+.topics { margin-bottom: 24rpx; }
+.topics-cap {
+  font-size: 28rpx;
+  color: #6e6354;
+  margin-bottom: 16rpx;
+}
+.topics-scroll { width: 100%; white-space: nowrap; }
+.topic-chip {
+  display: inline-block;
+  white-space: nowrap;
+  height: 88rpx;        /* 对齐 mode-tab，达到无障碍触摸下限 */
+  line-height: 88rpx;
+  padding: 0 36rpx;
+  margin-right: 16rpx;
+  border-radius: 48rpx;
+  background-color: #fff;
+  color: #5b5145;
+  font-size: 30rpx;
+  border: 2rpx solid #e3d6c3;
+}
+.topic-chip:last-child { margin-right: 0; }

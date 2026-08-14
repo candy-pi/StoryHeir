@@ -1,0 +1,10 @@
+{
+  "name": "extractValues",
+  "version": "1.0.0",
+  "description": "家风价值观提炼：遍历家族故事 → 百炼 GLM 抽取 → 归并落库（百炼 GLM）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3",
+    "node-fetch": "^2.7.0"
+  }
+}

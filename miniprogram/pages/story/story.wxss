@@ -1,0 +1,321 @@
+.story { min-height: 100vh; }
+
+.story-title {
+  font-size: 50rpx;
+  font-weight: 700;
+  color: #2B2218;
+  line-height: 1.4;
+}
+
+.story-meta {
+  font-size: 30rpx;
+  color: #6e6354;        /* 加深至 ≥4.5:1（原 #a89b88 约 2:1，老人看不清） */
+  margin: 16rpx 0 40rpx;
+}
+
+/* 老照片区：包裹 + 白底圆角图框（原散落在 wxml 的内联 style，抽出便于维护） */
+.story-photo-wrap { margin: 24rpx 0; }
+.story-photo-box {
+  border-radius: 24rpx;
+  overflow: hidden;
+  background-color: #fff;
+}
+.story-photo { width: 100%; display: block; }
+
+/* 多图轮播：swiper 固定高、image aspectFill 填满，多张等高整齐（单图仍走 widthFix 自适应） */
+.photo-swiper { width: 100%; height: 480rpx; }
+.photo-swiper .story-photo-box { height: 480rpx; }
+.photo-swiper .story-photo { width: 100%; height: 100%; display: block; }
+.colorized-hint {
+  text-align: center;
+  color: #A0522D;
+  font-size: 30rpx;
+  padding: 24rpx 0;
+}
+
+/* 正文卡片：舒适行距，保留段落换行 */
+.story-content {
+  font-size: 34rpx;
+  line-height: 1.9;
+  color: #3a3228;
+  background-color: #fff;
+  border-radius: 24rpx;
+  padding: 40rpx;
+  margin-bottom: 48rpx;
+  white-space: pre-wrap;
+}
+
+/* 底部操作区：续访为主操作独占一行，朗读 / 分享为描边次按钮并排，破除一堵实心墙的层次缺失 */
+.story-actions { margin-bottom: 8rpx; }
+.action-row {
+  display: flex;
+  margin-top: 24rpx;
+}
+/* 描边次按钮：白底 + 主色文字 + 描边，与实心主按钮区分层级（白底配 #A0522D 文字对比度约 4.6:1，达标） */
+.btn-ghost {
+  flex: 1;
+  height: 96rpx;
+  line-height: 96rpx;
+  border-radius: 48rpx;
+  background-color: #fff;
+  color: #A0522D;
+  font-size: 34rpx;
+  font-weight: 600;
+  border: 3rpx solid #A0522D;
+  text-align: center;
+  /* 压住原生 <button> 内边距，长文案（分享到家族群）不被挤截断 */
+  box-sizing: border-box;
+  padding: 0 16rpx;
+  margin-right: 24rpx;
+}
+.btn-ghost:last-child { margin-right: 0; }
+
+/* 加载骨架：标题/照片/段落占位，与真实排版接近 */
+.story-skel { min-height: 100vh; }
+.story-skel .skel-title { height: 60rpx; width: 60%; border-radius: 16rpx; margin-bottom: 20rpx; }
+.story-skel .skel-line { height: 32rpx; width: 40%; margin-bottom: 32rpx; }
+.story-skel .skel-photo { height: 420rpx; border-radius: 24rpx; margin-bottom: 32rpx; }
+.story-skel .skel-para { height: 200rpx; border-radius: 24rpx; margin-bottom: 24rpx; }
+
+.empty {
+  text-align: center;
+  color: #6e6354;
+  padding-top: 200rpx;
+}
+
+/* 人物关系图卡片 */
+.graph-card {
+  background-color: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 40rpx;
+}
+.graph-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #2B2218;
+  margin-bottom: 16rpx;
+}
+.graph-canvas {
+  width: 100%;
+  height: 520rpx;
+}
+
+/* 家人共建：补充 / 校对 / 认人 */
+.contrib-card {
+  background-color: #fff;
+  border-radius: 24rpx;
+  padding: 36rpx 40rpx;
+  margin-bottom: 40rpx;
+}
+.contrib-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #2B2218;
+  margin-bottom: 8rpx;
+}
+.contrib-item {
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f0e9dd;
+}
+.contrib-head {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+.contrib-nick {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2B2218;
+}
+.contrib-tag {
+  font-size: 24rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  margin-left: 16rpx;
+  color: #fff;
+}
+/* 标签背景加深，确保白字对比度 ≥4.5:1（原 correct #c08055 / identify #8a7a66 偏浅不达标） */
+.contrib-tag-supplement { background-color: #A0522D; }
+.contrib-tag-correct { background-color: #9c5a33; }
+.contrib-tag-identify { background-color: #6b5d4d; }
+.contrib-time {
+  font-size: 28rpx;
+  color: #6e6354;
+  margin-left: auto;
+}
+.contrib-content {
+  font-size: 32rpx;
+  color: #3a3228;
+  line-height: 1.7;
+}
+.contrib-empty {
+  font-size: 30rpx;
+  color: #6e6354;
+  text-align: center;
+  padding: 32rpx 0;
+}
+.contrib-form {
+  margin-top: 24rpx;
+  border-top: 1rpx solid #f0e9dd;
+  padding-top: 32rpx;
+}
+.nick-input {
+  height: 88rpx;
+  background-color: #FBF7F0;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  font-size: 32rpx;
+  margin-bottom: 20rpx;
+}
+.type-row {
+  display: flex;
+  margin-bottom: 20rpx;
+}
+.type-btn {
+  flex: 1;
+  height: 88rpx;          /* 加高至无障碍触摸下限（原 80rpx） */
+  line-height: 88rpx;
+  text-align: center;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  color: #8a7a66;
+  background-color: #FBF7F0;
+  margin-right: 16rpx;
+}
+.type-btn:last-child { margin-right: 0; }
+.type-btn.on {
+  background-color: #A0522D;
+  color: #fff;
+}
+.person-pick {
+  height: 88rpx;
+  line-height: 88rpx;
+  background-color: #FBF7F0;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  font-size: 32rpx;
+  color: #5b5145;
+  margin-bottom: 20rpx;
+}
+.content-input {
+  width: 100%;
+  min-height: 160rpx;
+  background-color: #FBF7F0;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  font-size: 32rpx;
+  line-height: 1.6;
+  box-sizing: border-box;
+  margin-bottom: 24rpx;
+}
+
+/* 关系详情弹层：点边后从底部滑出，展示两人关系与同框情节 */
+.rel-popup {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 100;
+}
+.rel-popup-mask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color: rgba(43, 34, 24, 0.45);
+}
+.rel-popup-box {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #FBF7F0;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 40rpx;
+  padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
+}
+.rel-popup-title {
+  font-size: 38rpx;
+  font-weight: 700;
+  color: #2B2218;
+}
+.rel-popup-relation {
+  font-size: 28rpx;
+  color: #A0522D;
+  margin: 12rpx 0 24rpx;
+}
+.rel-popup-sub {
+  font-size: 28rpx;
+  color: #6e6354;
+  margin-bottom: 12rpx;
+}
+.rel-popup-co {
+  font-size: 30rpx;
+  color: #3a3228;
+  line-height: 1.7;
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 16rpx;
+}
+.rel-popup-empty {
+  font-size: 28rpx;
+  color: #6e6354;
+  padding: 16rpx 0 24rpx;
+}
+.rel-popup-btn {
+  margin-top: 16rpx;
+}
+
+/* 故事操作行：编辑 / 删除，底部次级操作（仅创建者可改可删；非创建者点了被权限拦截） */
+.story-ops {
+  display: flex;
+  justify-content: center;
+  gap: 64rpx;
+  margin-top: 32rpx;
+}
+.story-op {
+  font-size: 30rpx;
+  color: #6e6354;
+  padding: 16rpx 24rpx;
+}
+.story-op.danger {
+  color: #b03a2e;   /* 删除用警示红，对比度仍达标 */
+}
+
+/* 编辑模式：标题输入框 / 正文文本框 / 保存取消 */
+.edit-title {
+  font-size: 46rpx;
+  font-weight: 700;
+  color: #2B2218;
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 16rpx 24rpx;
+  margin-bottom: 20rpx;
+}
+.edit-content {
+  width: 100%;
+  min-height: 500rpx;
+  font-size: 34rpx;
+  line-height: 1.9;
+  color: #3a3228;
+  background-color: #fff;
+  border-radius: 24rpx;
+  padding: 40rpx;
+  box-sizing: border-box;
+  margin-bottom: 32rpx;
+}
+.edit-ops {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+.edit-ops .btn-primary { flex: 1; }
+.edit-cancel {
+  font-size: 32rpx;
+  color: #6e6354;
+  padding: 0 32rpx;
+}
