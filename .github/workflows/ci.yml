@@ -1,0 +1,70 @@
+# CI：语法门禁 + 结构完整性检查（零外部依赖，Node 20 内置能力）
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 云函数与小程序 JS 语法检查（node --check）
+        run: |
+          fail=0
+          # 所有云函数入口 + 小程序页面/工具 JS 全量语法检查
+          for f in cloudfunctions/*/index.js miniprogram/app.js miniprogram/config.js miniprogram/utils/*.js miniprogram/pages/*/*.js; do
+            [ -f "$f" ] || continue
+            if ! node --check "$f"; then
+              echo "::error file=$f::语法错误"
+              fail=1
+            fi
+          done
+          exit $fail
+
+      - name: 结构完整性（云函数六件套 + app.json 页面声明）
+        run: |
+          fail=0
+          # 每个云函数目录必须是 config.json + index.js + package.json 三件套
+          for d in cloudfunctions/*/; do
+            for f in config.json index.js package.json; do
+              if [ ! -f "$d$f" ]; then
+                echo "::error file=$d$f::缺少文件"
+                fail=1
+              fi
+              if [[ "$f" == *.json ]]; then
+                node -e "JSON.parse(require('fs').readFileSync('$d$f','utf8'))" || { echo "::error file=$d$f::JSON 解析失败"; fail=1; }
+              fi
+            done
+          done
+          # app.json 声明的每个页面都有 js/json/wxml 三件
+          node -e "
+          const fs = require('fs');
+          const app = JSON.parse(fs.readFileSync('miniprogram/app.json', 'utf8'));
+          let bad = 0;
+          for (const p of (app.pages || [])) {
+            for (const ext of ['js', 'json', 'wxml']) {
+              const f = 'miniprogram/' + p + '.' + ext;
+              if (!fs.existsSync(f)) { console.error('缺少页面文件: ' + f); bad = 1; }
+            }
+          }
+          if (app.pages && app.pages.length === 0) { console.error('app.json 未声明任何页面'); bad = 1; }
+          process.exit(bad);
+          "
+
+      - name: 测试脚本结构检查（LLM 冒烟测试脚本可解析）
+        run: |
+          for f in tests/*.js; do
+            [ -f "$f" ] || continue
+            node --check "$f" || { echo "::error file=$f::语法错误"; exit 1; }
+          done
+          echo "全部测试脚本语法 OK"
