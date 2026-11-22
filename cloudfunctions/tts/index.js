@@ -53,13 +53,22 @@ async function persistToCloud(url) {
 }
 
 exports.main = async (event) => {
-  const { storyId } = event
-  if (!storyId) return { code: 1, message: '缺少 storyId' }
+  const { storyId, question } = event
+  const questionText = typeof question === 'string' ? question.trim() : ''
+  if (!storyId && !questionText) return { code: 1, message: '缺少 storyId或访谈问题' }
   if (!apiKey()) return { code: 1, message: '未配置 DASHSCOPE_API_KEY' }
 
   try {
+    if (!storyId) {
+      if (questionText.length > 500) {
+        return { code: 1, message: '访谈问题超过朗读长度限制' }
+      }
+      return { code: 0, data: { audioUrl: await synth(questionText) } }}
     const story = (await db.collection('story').doc(storyId).get()).data
     if (!story) return { code: 1, message: '故事不存在' }
+    
+
+      
 
     // 缓存优先：已合成过直接返回，不重复计费、老人再点即时出声
     if (story.ttsFileID) return { code: 0, data: { fileID: story.ttsFileID } }

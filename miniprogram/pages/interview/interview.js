@@ -182,6 +182,9 @@ Page({
           wx.openSetting()
           return
         }
+
+        this._stopQuestionAudio()
+
         recorderManager.start({
           duration: 600000,  // 最长 10 分钟，给老人充足讲述时间
           sampleRate: 16000,
@@ -277,6 +280,8 @@ Page({
       const messages = this.data.messages.slice()
       messages[messages.length - 1] = { role: 'assistant', text: reply, loading: false }
       this.setData({ messages, toView: `msg-${messages.length - 1}` })
+      this._readQuestion(reply)
+
     } catch (e) {
       // 失败则移除占位气泡，避免界面卡住
       this.setData({ messages: this.data.messages.slice(0, -1) })
@@ -284,6 +289,59 @@ Page({
       this.setData({ busy: false })
     }
   },
+
+  onShow() {
+    this._pageHidden = false
+  },
+  
+  onHide() {
+    this._pageHidden = true
+    this._stopQuestionAudio()
+  },
+  
+  onUnload() {
+    this.onHide()
+  },
+  
+  _stopQuestionAudio() {
+    this._questionPlayback = null
+    if (this._questionAudio) {
+      this._questionAudio.destroy()
+      this._questionAudio = null
+    }
+  },
+  
+  async _readQuestion(question) {
+    this._stopQuestionAudio()
+    if (!question || this._pageHidden || this.data.recording) return
+  
+    const playback = {}
+    this._questionPlayback = playback
+  
+    try {
+      const { audioUrl } = await api.call('tts', { question })
+      if (this._questionPlayback !== playback || !audioUrl) return
+  
+      const audio = wx.createInnerAudioContext()
+      this._questionAudio = audio
+  
+      audio.onEnded(() => {
+        if (this._questionAudio === audio) this._stopQuestionAudio()
+      })
+      audio.onError(err => {
+        console.error('[question audio]', err)
+        if (this._questionAudio === audio) this._stopQuestionAudio()
+      })
+  
+      audio.src = audioUrl
+      audio.play()
+    } catch (err) {
+      console.error('[question tts]', err)
+      if (this._questionPlayback === playback) this._stopQuestionAudio()
+    }
+  },
+
+
 
   _pushMessage(role, text, loading = false, photoFileID) {
     const msg = { role, text, loading }

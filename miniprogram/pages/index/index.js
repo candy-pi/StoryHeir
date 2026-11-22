@@ -94,6 +94,8 @@ Page({
   // 撑起列表 / 关系图 / 编年志 / 时间线。评审 Demo 与开发期 UI 验证用，无需真机录音与 API key。
   // 按标题去重：可重复点击，已载入的不再重复插入
   async loadDemo() {
+    if (this._loadingDemo) return
+    this._loadingDemo = true
     const demos = [
       {
         title: '1942年的逃难',
@@ -193,6 +195,8 @@ Page({
     } catch (e) {
       console.error('[loadDemo]', e)
       wx.showToast({ title: '载入失败，稍后再试', icon: 'none' })
+    } finally {
+      this._loadingDemo = false
     }
   },
 
