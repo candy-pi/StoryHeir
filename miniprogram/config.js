@@ -1,7 +1,7 @@
 // 全局配置：所有需要你在微信平台填写/替换的值都集中在这里
 module.exports = {
   // 云开发环境 ID
-  envId: 'cloudbase-d0gqvbmph7ed548d0',
+  envId: 'cloud1-d2gusddkl26721954',
 
   // 云函数名常量：改名时只改这里，调用处不用动
   cloudFns: {
