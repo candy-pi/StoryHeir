@@ -53,6 +53,11 @@ Page({
     if (options && options.storyId) this._startResume(options.storyId)
   },
 
+  async _mediaPath(kind, extension) {
+    if (!this._mediaOwner) this._mediaOwner = await api.call('family', { action: 'mediaOwner' })
+    return `private-media/${this._mediaOwner}/${kind}/${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`
+  },
+
   // 续访：打开原故事 → 预填原访谈对话 → 标记续访 → 自动触发首轮接续追问（不破冰）
   async _startResume(storyId) {
     wx.showLoading({ title: '打开故事中…' })
@@ -100,9 +105,10 @@ Page({
     })
   },
 
-  _uploadPhotoAndStart(tempPath) {
+  async _uploadPhotoAndStart(tempPath) {
     wx.showLoading({ title: 'AI 正在看照片…' })
-    const cloudPath = `photos/${Date.now()}-${Math.floor(Math.random() * 1000)}.jpg`
+    const cloudPath = await this._mediaPath('photos', 'jpg').catch(() => '')
+    if (!cloudPath) return wx.hideLoading()
     wx.cloud.uploadFile({
       cloudPath,
       filePath: tempPath,
@@ -127,9 +133,10 @@ Page({
     })
   },
 
-  _uploadAddedPhoto(tempPath) {
+  async _uploadAddedPhoto(tempPath) {
     wx.showLoading({ title: '上传照片…' })
-    const cloudPath = `photos/${Date.now()}-${Math.floor(Math.random() * 1000)}.jpg`
+    const cloudPath = await this._mediaPath('photos', 'jpg').catch(() => '')
+    if (!cloudPath) return wx.hideLoading()
     wx.cloud.uploadFile({
       cloudPath,
       filePath: tempPath,
@@ -230,8 +237,8 @@ Page({
     }
   },
 
-  _uploadAudio(tempFilePath) {
-    const cloudPath = `audio/${Date.now()}.mp3`
+  async _uploadAudio(tempFilePath) {
+    const cloudPath = await this._mediaPath('audio', 'mp3')
     return new Promise((resolve, reject) => {
       wx.cloud.uploadFile({
         cloudPath,

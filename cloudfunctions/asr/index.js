@@ -60,6 +60,14 @@ async function pollTask(taskId) {
 
 exports.main = async (event) => {
   const { fileID, dialect } = event
+  const { OPENID, ENV } = cloud.getWXContext()
+  const expected = /^cloud:\/\/([^/]+)\/private-media\/([\w-]+)\/audio\/[\w-]+\.mp3$/;
+  const ownsFile = id => {
+    const match = typeof id === 'string' && id.match(expected)
+    return !!(match && OPENID && ENV && match[2] === OPENID &&
+      (match[1] === ENV || match[1].startsWith(ENV + '.')))
+  }
+  if (!ownsFile(fileID)) return { code: 1, message: '无法访问这段录音' }
   if (!fileID) return { code: 1, message: '缺少 fileID' }
   if (!apiKey()) return { code: 1, message: '未配置 DASHSCOPE_API_KEY' }
 
@@ -81,7 +89,7 @@ exports.main = async (event) => {
     const text = (result.transcripts && result.transcripts[0] && result.transcripts[0].text) || ''
     return { code: 0, data: text }
   } catch (e) {
-    console.error('[asr]', e)
-    return { code: 1, message: '语音识别失败：' + (e.message || '未知错误') }
+    console.error('[asr] 转写失败', e.name || 'Error')
+    return { code: 1, message: '语音识别失败，请稍后再试' }
   }
 }

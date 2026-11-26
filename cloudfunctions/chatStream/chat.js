@@ -197,10 +197,10 @@ async function chatWithValidation(history, apiKey, model, validatorModel, photoC
       v = await validateReply(reply, recent, apiKey, validatorModel)
     } catch (e) {
       // Validator 调用异常（网络/限流/模型报错）：降级放行，绝不阻塞访谈
-      console.log('[chat] validator 异常，放行：', e && e.message)
+      console.log('[chat] validator 异常，放行')
       return reply
     }
-    console.log(`[chat] 第${i + 1}次验证 pass=${v.pass} issues=${JSON.stringify(v.issues)} suggestion=${v.suggestion}`)
+    console.log(`[chat] 第${i + 1}次验证 pass=${v.pass}`)
     if (v.pass) return reply
     // fail：把问题 + 改进方向拼成 feedback，让 Interviewer 针对性重生成
     const fb = [v.issues.join('；'), v.suggestion].filter(Boolean).join('；改进方向：')
@@ -212,6 +212,14 @@ async function chatWithValidation(history, apiKey, model, validatorModel, photoC
 
 exports.main = async (event) => {
   const { photoFileID, history, photoClues, resume } = event
+  const { OPENID, ENV } = cloud.getWXContext()
+  const expected = /^cloud:\/\/([^/]+)\/private-media\/([\w-]+)\/photos\/[\w-]+\.jpg$/;
+  const ownsFile = id => {
+    const match = typeof id === 'string' && id.match(expected)
+    return !!(match && OPENID && ENV && match[2] === OPENID &&
+      (match[1] === ENV || match[1].startsWith(ENV + '.')))
+  }
+  if (!OPENID) return { code: 1, message: '请先登录微信' }
   const apiKey = process.env.DASHSCOPE_API_KEY
   const model = process.env.DASHSCOPE_MODEL || 'glm-5.2'
   const vlModel = process.env.DASHSCOPE_VL_MODEL || 'qwen-vl-max'
@@ -228,12 +236,11 @@ exports.main = async (event) => {
     const hasHistory = Array.isArray(history) && history.length > 0
     let reply, clues = []
     if (photoFileID && !hasHistory) {
+      if (!ownsFile(photoFileID)) return { code: 1, message: '无法访问这张照片，请重新选择' }
       // 首轮有照片：VL 看图开场并抽线索（VL 调用贵 + 破冰质量可控，不验证）
       const v = await visionOpening(photoFileID, apiKey, vlModel)
       reply = v.question
       clues = v.clues
-      // 打印线索方便真机验证时在云函数日志核对 VL 抽了什么
-      if (clues.length) console.log('[chat] 首轮照片线索：', JSON.stringify(clues))
     } else if (!hasHistory) {
       // 首轮无照片：引导开场（非提问，不验证）
       reply = await generateText(history, apiKey, model, null, photoClues)
@@ -242,6 +249,7 @@ exports.main = async (event) => {
       const lastUser = [...history].reverse().find(h => h.role === 'user')
       const newPhoto = lastUser && lastUser.photoFileID
       if (newPhoto) {
+        if (!ownsFile(newPhoto)) return { code: 1, message: '无法访问这张照片，请重新选择' }
         const recentText = history.slice(-6).map(h => `${h.role === 'user' ? '老人' : '记者'}：${h.text}`).join('\n') || '(刚开始)'
         reply = await askAboutNewPhoto(newPhoto, recentText, apiKey, vlModel)
       } else if (validateOn) {
@@ -254,7 +262,7 @@ exports.main = async (event) => {
     }
     return { code: 0, data: { reply, clues } }
   } catch (e) {
-    console.error('[chat]', e)
+    console.error('[chat] 访谈失败', e.name || 'Error')
     return { code: 1, message: 'AI 暂时没有回应，稍后再试' }
   }
 }

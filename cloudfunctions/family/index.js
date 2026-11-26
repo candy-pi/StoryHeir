@@ -42,6 +42,9 @@ async function detachPersonalStories(familyId) {
 }
 
 const actions = {
+  async mediaOwner(_, openid) {
+    return openid
+  },
   async list(_, openid) {
     const { data } = await families.where({ members: db.command.all([openid]) })
       .field({ name: true, owner: true }).limit(100).get()
@@ -99,12 +102,34 @@ const actions = {
     const allStories = []
     const pageSize = 100
     for (let skip = 0; skip <= 500; skip += pageSize) {
-      const page = await stories.where({ familyId: family._id }).skip(skip).limit(pageSize).get()
+      const page = await stories.where({ familyId: family._id })
+        .field({ title: true, content: true, era: true, publishedAt: true,
+          photoFileID: true, colorizedFileID: true, interviewerOpenid: true })
+        .skip(skip).limit(pageSize).get()
       allStories.push(...page.data)
       if (page.data.length < pageSize) break
     }
     allStories.sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0))
-    return { familyName: family.name, stories: allStories, values: valuePage.data }
+    const cards = await Promise.all(allStories.map(async item => {
+      const { interviewerOpenid, ...card } = item
+      const photo = card.colorizedFileID || card.photoFileID
+      if (typeof photo === 'string' && photo.includes('/private-media/')) {
+        card.colorizedFileID = ''
+        card.photoFileID = ''
+        const path = photo.match(/^cloud:\/\/[^/]+\/private-media\/([\w-]+)\/photos\/[\w-]+\.jpg$/)
+        const env = cloud.getWXContext().ENV
+        const bucket = photo.slice('cloud://'.length).split('/')[0]
+        if (path && path[1] === interviewerOpenid && env &&
+            (bucket === env || bucket.startsWith(env + '.'))) {
+          try {
+            const { fileList } = await cloud.getTempFileURL({ fileList: [{ fileID: photo, maxAge: 600 }] })
+            card.photoFileID = fileList[0]?.tempFileURL || ''
+          } catch (_) {}
+        }
+      }
+      return card
+    }))
+    return { familyName: family.name, stories: cards, values: valuePage.data }
   },
 
   async delete(event, openid) {
@@ -143,7 +168,9 @@ const actions = {
     if (story.interviewId) {
       try {
         const interview = (await db.collection('interview').doc(story.interviewId).get()).data
-        interviewMessages = Array.isArray(interview?.messages)
+        interviewMessages = interview?._openid === openid &&
+          (!interview.familyId || interview.familyId === family._id) &&
+          Array.isArray(interview.messages)
           ? interview.messages.filter(message => message && typeof message.text === 'string' && message.text.trim())
             .map(message => ({ role: message.role === 'assistant' ? 'assistant' : 'user', text: message.text.trim() }))
           : []
@@ -178,12 +205,19 @@ const actions = {
         if (story.sourceStoryId) {
           sourceStory = (await db.collection('story').doc(story.sourceStoryId).get()).data
         } else {
-          const sourcePage = await db.collection('story').where({ familyStoryId: story._id }).limit(1).get()
+          const sourcePage = await db.collection('story').where({
+            familyStoryId: story._id, _openid: story.interviewerOpenid, familyId: family._id
+          }).limit(1).get()
           sourceStory = sourcePage.data[0]
         }
-        if (sourceStory?.interviewId) {
+        if (story.interviewerOpenid && sourceStory?.interviewId &&
+            sourceStory._openid === story.interviewerOpenid && sourceStory.familyId === family._id &&
+            createHash('sha256').update(JSON.stringify([family._id, sourceStory._id]))
+              .digest('hex').slice(0, 32) === story._id) {
           const interview = (await db.collection('interview').doc(sourceStory.interviewId).get()).data
-          interviewMessages = Array.isArray(interview?.messages) ? interview.messages : []
+          interviewMessages = interview?._openid === story.interviewerOpenid &&
+            (!interview.familyId || interview.familyId === family._id) &&
+            Array.isArray(interview.messages) ? interview.messages : []
         }
       } catch (_) {}
     }

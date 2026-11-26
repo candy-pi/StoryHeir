@@ -85,12 +85,19 @@ exports.main = async (event) => {
 
   try {
     const story = (await db.collection('story').doc(storyId).get()).data
-    const { OPENID } = cloud.getWXContext()
+    const { OPENID, ENV } = cloud.getWXContext()
     if (!OPENID || story?._openid !== OPENID) return { code: 1, message: '只有原作者可以操作个人故事' }
     if (!story) return { code: 1, message: '故事不存在' }
     if (!story.photoFileID) return { code: 1, message: '这个故事没有老照片' }
 
     // 云存储 fileID 转公网临时 URL，万相才能拉取上色
+    const photo = typeof story.photoFileID === 'string' && story.photoFileID.match(
+      /^cloud:\/\/([^/]+)\/(?:private-media\/([\w-]+)\/)?photos\/[\w-]+\.jpg$/
+    )
+    if (!photo || !ENV || (photo[1] !== ENV && !photo[1].startsWith(ENV + '.')) ||
+        (photo[2] && photo[2] !== OPENID)) {
+      return { code: 1, message: '无法访问这张照片' }
+    }
     const { fileList } = await cloud.getTempFileURL({ fileList: [story.photoFileID] })
     const baseUrl = fileList[0] && fileList[0].tempFileURL
     if (!baseUrl) return { code: 1, message: '获取照片地址失败' }
@@ -104,7 +111,7 @@ exports.main = async (event) => {
 
     return { code: 0, data: { fileID } }
   } catch (e) {
-    console.error('[restore]', e)
+    console.error('[restore] 上色失败', e.name || 'Error')
     return { code: 1, message: '上色失败：' + (e.message || '未知错误') }
   }
 }

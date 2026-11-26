@@ -161,7 +161,7 @@ exports.main = async event => {
   const MIN_PROOF = 2
   const values = Object.values(map).filter(v => v.count >= MIN_PROOF).sort((a, b) => b.count - a.count)
   // 调试日志：刷新后在云开发控制台→云函数→日志可看，用于确认是否真的重算
-  console.log('[extractValues] 标注', raw.length, '条 → 过滤后', values.length, '条', values.map(v => v.value + '(' + v.count + ')'))
+  console.log('[extractValues] 标注', raw.length, '条 → 过滤后', values.length, '条')
 
   // 清旧重写：仅替换当前家族的家风，不影响用户加入的其他家族。
   try {

@@ -19,6 +19,7 @@
   position: relative;
   box-sizing: border-box;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 108rpx;
@@ -28,11 +29,33 @@
   background: linear-gradient(145deg, #fffaf1, #ecd9be);
   color: #874427;
   font-family: "Songti SC", "Noto Serif CJK SC", SimSun, serif;
-  font-size: 62rpx;
+  font-size: 54rpx;
   font-weight: 700;
   line-height: 1;
   box-shadow: 0 8rpx 20rpx rgba(113, 55, 31, .14);
 }
+.seal-wave {
+  position: relative;
+  width: 5rpx;
+  height: 15rpx;
+  margin-top: 7rpx;
+  color: #945c37;
+  background: currentColor;
+  border-radius: 5rpx;
+}
+.seal-wave::before,
+.seal-wave::after {
+  content: '';
+  position: absolute;
+  top: 4rpx;
+  width: 5rpx;
+  height: 7rpx;
+  background: currentColor;
+  border-radius: 5rpx;
+}
+.seal-wave::before { left: -9rpx; }
+.seal-wave::after { right: -9rpx; }
+
 .memory-seal::after {
   content: '';
   position: absolute;

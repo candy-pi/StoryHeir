@@ -111,9 +111,16 @@ exports.main = async (event) => {
     return { code: 1, message: '访谈内容为空，先聊几句再生成故事' }
   }
 
-  const openid = cloud.getWXContext().OPENID
-  if (resumeId && !familyId) {
-    try { familyId = (await db.collection('story').doc(resumeId).get()).data?.familyId || '' } catch (_) {}
+  const { OPENID: openid, ENV: env } = cloud.getWXContext()
+  if (!openid) return { code: 1, message: '请先登录微信' }
+  let previousStory
+  if (resumeId) {
+    try { previousStory = (await db.collection('story').doc(resumeId).get()).data } catch (_) {}
+    if (previousStory?._openid !== openid) return { code: 1, message: '仅作者可完善' }
+    if (previousStory.familyId && familyId && previousStory.familyId !== familyId) {
+      return { code: 1, message: '不能更改故事所属家族' }
+    }
+    familyId = previousStory.familyId || familyId
   }
   if (!familyId) return { code: 1, message: '请先选择故事所属家族' }
   try {
@@ -125,14 +132,6 @@ exports.main = async (event) => {
     return { code: 1, message: '家族不存在或无权访问' }
   }
 
-  let story
-  try {
-    story = await generateStory(history, apiKey, model, finalStyle)
-  } catch (e) {
-    console.error('[genStory] 生成失败', e)
-    return { code: 1, message: '故事生成失败，稍后再试' }
-  }
-
   // 收集本次访谈全部照片：开场图(入参) + 过程补图(history 内带图消息)，去重保序
   const _ids = []
   if (photoFileID) _ids.push(photoFileID)
@@ -140,26 +139,43 @@ exports.main = async (event) => {
     if (h.photoFileID && !_ids.includes(h.photoFileID)) _ids.push(h.photoFileID)
   })
   const photoFileIDs = _ids
+  const previousPhotos = new Set([previousStory?.photoFileID, ...(previousStory?.photoFileIDs || [])])
+  for (const id of photoFileIDs) {
+    if (previousPhotos.has(id)) continue
+    const photo = typeof id === 'string' && id.match(
+      /^cloud:\/\/([^/]+)\/private-media\/([\w-]+)\/photos\/[\w-]+\.jpg$/
+    )
+    if (!photo || photo[2] !== openid || !env ||
+        (photo[1] !== env && !photo[1].startsWith(env + '.'))) {
+      return { code: 1, message: '无法访问访谈照片，请重新选择' }
+    }
+  }
+
+  let story
+  try {
+    story = await generateStory(history, apiKey, model, finalStyle)
+  } catch (e) {
+    console.error('[genStory] 生成失败', e.name || 'Error')
+    return { code: 1, message: '故事生成失败，稍后再试' }
+  }
 
   // 落库：续访（带 resumeId）则 update 原故事 + 回写完整对话；首次则 add 访谈与故事
   let storyId = resumeId || ''
   try {
     if (resumeId) {
       // 续访：先校验作者，非作者直接拒绝（云函数层显式拦截，提示更友好）
-      const old = await db.collection('story').doc(resumeId).get()
-      if (!old.data || old.data._openid !== openid) {
-        return { code: 1, message: '仅作者可完善' }
-      }
       // 覆盖更新原故事正文/标题/年代/人物/关系 + 照片集
       await db.collection('story').doc(resumeId).update({
-        data: { ...story, familyId, style: finalStyle, photoFileID: photoFileIDs[0] || old.data.photoFileID || '', photoFileIDs }
+        data: { ...story, familyId, style: finalStyle, photoFileID: photoFileIDs[0] || previousStory.photoFileID || '', photoFileIDs }
       })
       // 回写完整对话（原+新）到原访谈记录，保留可追溯
-      if (old.data.interviewId) {
+      if (previousStory.interviewId) {
         try {
-          await db.collection('interview').doc(old.data.interviewId).update({
-            data: { messages: history, updatedAt: db.serverDate() }
-          })
+          const record = db.collection('interview').doc(previousStory.interviewId)
+          const { data: interview } = await record.get()
+          if (interview?._openid === openid && (!interview.familyId || interview.familyId === familyId)) {
+            await record.update({ data: { messages: history, updatedAt: db.serverDate() } })
+          }
         } catch (_) {}
       }
     } else {
@@ -174,7 +190,7 @@ exports.main = async (event) => {
     }
 
   } catch (e) {
-    console.error('[genStory] 落库失败', e)
+    console.error('[genStory] 落库失败', e.name || 'Error')
     // 续访更新失败必须报错：否则故事页重读云端会显示旧内容，与用户刚看到的矛盾
     // 首次落库失败则仍返回故事（前端可走本地兜底显示）
     if (resumeId) return { code: 1, message: '更新失败，稍后再试' }

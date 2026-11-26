@@ -1,8 +1,13 @@
 <!-- 首页：产品调性 + 家风墙 + 访谈主入口 + 家族故事列表 -->
 <view class="page-pad safe-bottom home">
   <view class="hero">
-    <view class="hero-mark"><view class="seal">忆</view></view>
-    <text class="title-xl">家忆录</text>
+    <view class="hero-mark">
+      <view class="memory-seal">
+        <text>声</text>
+        <view class="seal-wave" aria-hidden="true"></view>
+      </view>
+    </view>
+    <text class="title-xl">家声拾记</text>
     <text class="slogan">留住爷爷奶奶的故事</text>
     <text class="desc">AI 记者陪你和家人聊老照片，把口口相传的往事，变成可以传下去的家族故事书。</text>
   </view>

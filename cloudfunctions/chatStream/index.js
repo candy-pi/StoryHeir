@@ -116,7 +116,7 @@ app.post('/chat', async (req, res) => {
     throw new Error('模型连接提前结束')
   } catch (error) {
     if (res.destroyed) return
-    console.error('[chatStream]', error.message)
+    console.error('[chatStream] 流式请求失败', error.name || 'Error')
 
     if (!res.headersSent) {
       return res.status(502).json({ error: 'AI 暂时没有回应' })
