@@ -15,7 +15,7 @@ const BASE = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-gen
 const apiKey = () => process.env.DASHSCOPE_API_KEY
 
 // 合成语音，返回音频公网 URL（24h 有效）。voice=Cherry 系统女声，language_type=Chinese
-async function synth(text) {
+async function synth(text, voice = 'Rocky') {
   const resp = await fetch(BASE, {
     method: 'POST',
     headers: {
@@ -24,7 +24,7 @@ async function synth(text) {
     },
     body: JSON.stringify({
       model: 'qwen3-tts-flash',
-      input: { text, voice: 'Cherry', language_type: 'Chinese' }
+      input: { text, voice, language_type: 'Chinese' }
     })
   })
   const data = await resp.json()
@@ -53,18 +53,37 @@ async function persistToCloud(url) {
 }
 
 exports.main = async (event) => {
-  const { storyId, question } = event
+  const { storyId, question, dialect, familyId, familyStoryId } = event
   const questionText = typeof question === 'string' ? question.trim() : ''
-  if (!storyId && !questionText) return { code: 1, message: '缺少 storyId或访谈问题' }
+  if (!storyId && !questionText && !familyStoryId) return { code: 1, message: '缺少 storyId或访谈问题' }
   if (!apiKey()) return { code: 1, message: '未配置 DASHSCOPE_API_KEY' }
 
   try {
+    if (familyStoryId) {
+      const { OPENID } = cloud.getWXContext()
+      if (!OPENID || typeof familyId !== 'string' || typeof familyStoryId !== 'string') {
+        return { code: 1, message: '家族故事请求无效' }
+      }
+      const { data: family } = await db.collection('families').doc(familyId).get()
+      if (!family?.members?.includes(OPENID)) {
+        return { code: 1, message: '请先加入这个家族' }
+      }
+      const { data: shared } = await db.collection('familyStories').doc(familyStoryId).get()
+      if (!shared || shared.familyId !== familyId || !shared.content?.trim()) {
+        return { code: 1, message: '家族故事不存在或没有正文' }
+      }
+      return { code: 0, data: { audioUrl: await synth(shared.content.trim()) } }
+    }
     if (!storyId) {
       if (questionText.length > 500) {
         return { code: 1, message: '访谈问题超过朗读长度限制' }
       }
-      return { code: 0, data: { audioUrl: await synth(questionText) } }}
+      const voice = dialect === 'yue' ? 'Rocky' : 'Cherry'
+      return { code: 0, data: { audioUrl: await synth(questionText, voice) } }
+    }
     const story = (await db.collection('story').doc(storyId).get()).data
+    const { OPENID } = cloud.getWXContext()
+    if (!OPENID || story?._openid !== OPENID) return { code: 1, message: '只有原作者可以操作个人故事' }
     if (!story) return { code: 1, message: '故事不存在' }
     
 

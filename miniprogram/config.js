@@ -5,6 +5,7 @@ module.exports = {
 
   // 云函数名常量：改名时只改这里，调用处不用动
   cloudFns: {
+    family: 'family',
     chat: 'chat',         // 访谈对话（百炼 GLM）
     asr: 'asr',           // 语音转写（百炼 Paraformer）
     genStory: 'genStory', // 故事生成（百炼 GLM）

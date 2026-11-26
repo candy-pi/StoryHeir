@@ -101,6 +101,7 @@ async function generateStory(history, apiKey, model, style) {
 
 exports.main = async (event) => {
   const { history, photoFileID, style, storyId: resumeId } = event
+  let familyId = typeof event.familyId === 'string' ? event.familyId.trim() : ''
   const apiKey = process.env.DASHSCOPE_API_KEY
   const model = process.env.DASHSCOPE_MODEL || 'glm-5.2'
   const finalStyle = STYLE_DESC[style] ? style : 'warm'
@@ -108,6 +109,20 @@ exports.main = async (event) => {
   if (!apiKey) return { code: 1, message: '未配置 DASHSCOPE_API_KEY' }
   if (!Array.isArray(history) || history.length === 0) {
     return { code: 1, message: '访谈内容为空，先聊几句再生成故事' }
+  }
+
+  const openid = cloud.getWXContext().OPENID
+  if (resumeId && !familyId) {
+    try { familyId = (await db.collection('story').doc(resumeId).get()).data?.familyId || '' } catch (_) {}
+  }
+  if (!familyId) return { code: 1, message: '请先选择故事所属家族' }
+  try {
+    const family = (await db.collection('families').doc(familyId).get()).data
+    if (!family || !Array.isArray(family.members) || !family.members.includes(openid)) {
+      return { code: 1, message: '你还没有加入这个家族' }
+    }
+  } catch (_) {
+    return { code: 1, message: '家族不存在或无权访问' }
   }
 
   let story
@@ -127,7 +142,6 @@ exports.main = async (event) => {
   const photoFileIDs = _ids
 
   // 落库：续访（带 resumeId）则 update 原故事 + 回写完整对话；首次则 add 访谈与故事
-  const openid = cloud.getWXContext().OPENID
   let storyId = resumeId || ''
   try {
     if (resumeId) {
@@ -138,7 +152,7 @@ exports.main = async (event) => {
       }
       // 覆盖更新原故事正文/标题/年代/人物/关系 + 照片集
       await db.collection('story').doc(resumeId).update({
-        data: { ...story, style: finalStyle, photoFileID: photoFileIDs[0] || old.data.photoFileID || '', photoFileIDs }
+        data: { ...story, familyId, style: finalStyle, photoFileID: photoFileIDs[0] || old.data.photoFileID || '', photoFileIDs }
       })
       // 回写完整对话（原+新）到原访谈记录，保留可追溯
       if (old.data.interviewId) {
@@ -151,13 +165,14 @@ exports.main = async (event) => {
     } else {
       // 首次成稿：存访谈原文 + 存故事并关联
       const iv = await db.collection('interview').add({
-        data: { _openid: openid, photoFileID: photoFileID || '', messages: history, createdAt: db.serverDate() }
+        data: { _openid: openid, familyId, photoFileID: photoFileID || '', messages: history, createdAt: db.serverDate() }
       })
       const st = await db.collection('story').add({
-        data: { _openid: openid, ...story, style: finalStyle, photoFileID: photoFileIDs[0] || '', photoFileIDs, interviewId: iv._id, createdAt: db.serverDate() }
+        data: { _openid: openid, familyId, ...story, style: finalStyle, photoFileID: photoFileIDs[0] || '', photoFileIDs, interviewId: iv._id, createdAt: db.serverDate() }
       })
       storyId = st._id
     }
+
   } catch (e) {
     console.error('[genStory] 落库失败', e)
     // 续访更新失败必须报错：否则故事页重读云端会显示旧内容，与用户刚看到的矛盾
@@ -165,5 +180,5 @@ exports.main = async (event) => {
     if (resumeId) return { code: 1, message: '更新失败，稍后再试' }
   }
 
-  return { code: 0, data: { ...story, style: finalStyle, _id: storyId, createdAt: new Date() } }
+  return { code: 0, data: { ...story, familyId, style: finalStyle, _id: storyId, createdAt: new Date() } }
 }

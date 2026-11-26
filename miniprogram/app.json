@@ -3,13 +3,14 @@
     "pages/index/index",
     "pages/interview/interview",
     "pages/story/story",
-    "pages/chronicle/chronicle"
+    "pages/chronicle/chronicle",
+    "pages/family/family"
   ],
   "window": {
     "backgroundColor": "#FBF7F0",
     "backgroundTextStyle": "dark",
     "navigationBarBackgroundColor": "#FBF7F0",
-    "navigationBarTitleText": "传家志",
+    "navigationBarTitleText": "家忆录",
     "navigationBarTextStyle": "black",
     "enablePullDownRefresh": false
   },

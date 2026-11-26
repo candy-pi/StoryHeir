@@ -41,6 +41,7 @@ Page({
   },
 
   onLoad(options) {
+    this.familyId = (options && options.familyId) || ''
     recorderManager = wx.getRecorderManager()
     recorderManager.onStop(res => this._onRecordStop(res))
     recorderManager.onError(() => {
@@ -68,6 +69,7 @@ Page({
         } catch (e) {}
       }
       this.storyId = storyId
+      this.familyId = story.familyId || this.familyId
       this.isResume = true
       const pre = msgs.filter(m => m && m.text).map(m => ({ role: m.role, text: m.text, loading: false }))
       this.setData({
@@ -244,6 +246,7 @@ Page({
   async onSendText() {
     const text = (this.data.textInput || '').trim()
     if (!text || this.data.busy) return
+    this._stopQuestionAudio()
     this.setData({ textInput: '' })
     this._pushMessage('user', text)
     await this._askAI(this._historyForAI())
@@ -268,6 +271,24 @@ Page({
     this._pushMessage('assistant', '', true) // 先放"思考中"占位气泡
     this.setData({ busy: true })
     try {
+      //流式输出开始
+      if (!this.data.photoFileID && !history.some(message => message.photoFileID)) {
+        const index = this.data.messages.length - 1
+        let reply = ''
+
+        await api.streamChat(
+          { history, photoClues: this.photoClues || [], resume: !!resume },
+          delta => {
+            reply += delta
+          }
+        )
+
+        this._readQuestion(reply, index)
+        return
+      }
+      //流式输出结束
+
+
       const { reply, clues } = await api.call('chat', {
         photoFileID: this.data.photoFileID,
         history,
@@ -283,6 +304,7 @@ Page({
       this._readQuestion(reply)
 
     } catch (e) {
+      console.error('[chatStream/askAI]', e)
       // 失败则移除占位气泡，避免界面卡住
       this.setData({ messages: this.data.messages.slice(0, -1) })
     } finally {
@@ -304,39 +326,76 @@ Page({
   },
   
   _stopQuestionAudio() {
+    const playback = this._questionPlayback
+    const audio = this._questionAudio
     this._questionPlayback = null
-    if (this._questionAudio) {
-      this._questionAudio.destroy()
-      this._questionAudio = null
-    }
+    this._questionAudio = null
+
+    if (audio) audio.destroy()
+    if (playback) playback.showFullText()
   },
-  
-  async _readQuestion(question) {
+
+  async _readQuestion(question, messageIndex) {
     this._stopQuestionAudio()
-    if (!question || this._pageHidden || this.data.recording) return
-  
-    const playback = {}
+
+    const characters = Array.from(question || '')
+    const showText = count => {
+      if (messageIndex === undefined || !this.data.messages[messageIndex]) return
+
+      this.setData({
+        [`messages[${messageIndex}].text`]: characters.slice(0, count).join(''),
+        [`messages[${messageIndex}].loading`]: false
+      })
+    }
+
+    const showFullText = () => showText(characters.length)
+
+    if (!characters.length || this._pageHidden || this.data.recording) {
+      showFullText()
+      return
+    }
+
+    const playback = { showFullText }
     this._questionPlayback = playback
-  
+
     try {
-      const { audioUrl } = await api.call('tts', { question })
-      if (this._questionPlayback !== playback || !audioUrl) return
-  
+      const { audioUrl } = await api.call('tts', {
+        question,
+        dialect: this.data.dialect
+      })
+      if (this._questionPlayback !== playback) return
+      if (!audioUrl) throw new Error('没有返回朗读音频')
+
       const audio = wx.createInnerAudioContext()
       this._questionAudio = audio
-  
+
+      audio.onPlay(() => {
+        if (this._questionAudio === audio &&
+            this.data.messages[messageIndex]?.loading) {
+          showText(1)
+        }
+      })
+
+      audio.onTimeUpdate(() => {
+        if (this._questionAudio !== audio || !(audio.duration > 0)) return
+
+        const progress = Math.min(1, audio.currentTime / audio.duration)
+        showText(Math.max(1, Math.ceil(progress * characters.length)))
+      })
+
       audio.onEnded(() => {
         if (this._questionAudio === audio) this._stopQuestionAudio()
       })
-      audio.onError(err => {
-        console.error('[question audio]', err)
+
+      audio.onError(error => {
+        console.error('[question audio]', error)
         if (this._questionAudio === audio) this._stopQuestionAudio()
       })
-  
+
       audio.src = audioUrl
       audio.play()
-    } catch (err) {
-      console.error('[question tts]', err)
+    } catch (error) {
+      console.error('[question tts]', error)
       if (this._questionPlayback === playback) this._stopQuestionAudio()
     }
   },
@@ -376,6 +435,7 @@ Page({
         history,
         photoFileID: this.data.photoFileID,
         style: this.data.style,
+        familyId: this.familyId,
         // 续访模式带 storyId：云函数 update 原故事而非新增；首次成稿留空走 add
         storyId: this.isResume ? this.storyId : ''
       })

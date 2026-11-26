@@ -4,24 +4,107 @@ const api = require('../../utils/api.js')
 
 Page({
   data: {
+    families: [],       // 当前用户已加入的家族
+    familyLoading: true,
+    familyModal: '',    // create / join / interview
+    familyName: '',
+    familyIdInput: '',
     stories: [],        // 历史家族故事
-    loading: true,      // 首次加载骨架标记；回首页静默刷新不再显示骨架，避免列表闪动
-    values: [],         // 家风价值观（从 familyValue 集合读）
-    valuesLoaded: false,// 家风是否已尝试加载（区分"空"与"加载中"）
-    valuePop: null      // 点标签展开的家风详情 { value, quotes, sources }
+    loading: true       // 首次加载骨架标记；回首页静默刷新不再显示骨架
   },
 
   onShow() {
     // 每次回到首页刷新列表，刚生成的故事能立刻出现
-    this.loadStories()
-    this.loadValues()
+    this.loadFamilies()
   },
 
   // 下拉刷新：补了新故事或换设备后，下拉即重拉最新列表
   async onPullDownRefresh() {
-    await this.loadStories()
-    await this.loadValues()
+    await this.loadFamilies()
     wx.stopPullDownRefresh()
+  },
+
+  async loadFamilies() {
+    try {
+      const families = await api.call('family', { action: 'list' }) || []
+      this.setData({ families, familyLoading: false })
+    } catch (e) {
+      this.setData({ familyLoading: false })
+    }
+  },
+
+  openCreate() { this.setData({ familyModal: 'create', familyName: '' }) },
+  openJoin() { this.setData({ familyModal: 'join', familyIdInput: '' }) },
+  closeFamilyModal() { this.setData({ familyModal: '' }) },
+  onFamilyNameInput(e) { this.setData({ familyName: e.detail.value }) },
+  onFamilyIdInput(e) { this.setData({ familyIdInput: e.detail.value }) },
+
+  async createFamily() {
+    const name = (this.data.familyName || '').trim()
+    if (!name) return wx.showToast({ title: '请填写家族名称', icon: 'none' })
+    wx.showLoading({ title: '创建中…', mask: true })
+    try {
+      const family = await api.call('family', { action: 'create', name })
+      await this.loadFamilies()
+      this.setData({ familyModal: '' })
+      wx.showModal({
+        title: '家族创建成功',
+        content: `家族ID：${family._id}\n\n请复制并分享给家族成员，成员凭此ID加入。`,
+        confirmText: '复制ID',
+        success: res => {
+          if (res.confirm) wx.setClipboardData({ data: family._id })
+        }
+      })
+    } catch (e) {} finally { wx.hideLoading() }
+  },
+
+  async joinFamily() {
+    const familyId = (this.data.familyIdInput || '').trim()
+    if (!familyId) return wx.showToast({ title: '请输入家族ID', icon: 'none' })
+    wx.showLoading({ title: '加入中…', mask: true })
+    try {
+      await api.call('family', { action: 'join', familyId })
+      await this.loadFamilies()
+      this.setData({ familyModal: '' })
+      wx.showToast({ title: '已加入家族', icon: 'success' })
+    } catch (e) {} finally { wx.hideLoading() }
+  },
+
+  openFamily(e) {
+    const familyId = e.currentTarget.dataset.id
+    getApp().globalData.currentFamilyId = familyId
+    wx.navigateTo({ url: `/pages/family/family?familyId=${familyId}` })
+  },
+
+  deleteFamily(e) {
+    const familyId = e.currentTarget.dataset.id
+    const familyName = e.currentTarget.dataset.name || '这个家族'
+    wx.showModal({
+      title: '删除家族？',
+      content: `确定要删除“${familyName}”吗？家族故事、家风和讲述人资料也会一并删除，且无法恢复。`,
+      confirmText: '确定',
+      cancelText: '取消',
+      confirmColor: '#b03a2e',
+      success: async result => {
+        if (!result.confirm) return
+        wx.showLoading({ title: '删除中…', mask: true })
+        try {
+          await api.call('family', { action: 'delete', familyId })
+          if (getApp().globalData.currentFamilyId === familyId) {
+            getApp().globalData.currentFamilyId = null
+          }
+          await this.loadFamilies()
+          wx.showToast({ title: '已删除', icon: 'success' })
+        } catch (_) {} finally { wx.hideLoading() }
+      }
+    })
+  },
+
+  chooseInterviewFamily(e) {
+    const familyId = e.currentTarget.dataset.id
+    getApp().globalData.currentFamilyId = familyId
+    this.setData({ familyModal: '' })
+    wx.navigateTo({ url: `/pages/interview/interview?familyId=${familyId}` })
   },
 
   async loadStories() {
@@ -35,45 +118,6 @@ Page({
       // 集合未建或权限未开时静默，不阻塞首页主入口
       this.setData({ loading: false })
     }
-  },
-
-  // 拉家风：按出现频次降序；count 越大字号越大（sizeClass）
-  async loadValues() {
-    try {
-      const res = await db.collection('familyValue')
-        .orderBy('count', 'desc')
-        .limit(30)
-        .get()
-      const values = res.data.map(v => ({
-        ...v,
-        sizeClass: v.count >= 3 ? 'lg' : v.count === 2 ? 'md' : 'sm'
-      }))
-      this.setData({ values, valuesLoaded: true })
-    } catch (e) {
-      // 集合未建或权限未开时静默
-      this.setData({ valuesLoaded: true })
-    }
-  },
-
-  // 手动刷新家风：调云函数全量重算（清旧重写）
-  async onRefreshValues() {
-    wx.showLoading({ title: '正在提炼家风…', mask: true })
-    try {
-      await api.call('extractValues')
-      await this.loadValues()
-      wx.showToast({ title: this.data.values.length ? '家风已更新' : '暂未提炼出家风', icon: 'none' })
-    } catch (e) {
-      // 失败提示由 api.call 统一处理
-    } finally {
-      wx.hideLoading()
-    }
-  },
-
-  onTapValue(e) {
-    this.setData({ valuePop: this.data.values[e.currentTarget.dataset.idx] })
-  },
-  closeValuePop() {
-    this.setData({ valuePop: null })
   },
 
   // 简单时间格式：今天显示"今天"，否则显示"X月X日"
@@ -201,11 +245,17 @@ Page({
   },
 
   goToInterview() {
-    wx.navigateTo({ url: '/pages/interview/interview' })
+    if (!this.data.families.length) {
+      return wx.showModal({
+        title: '请先创建家族',
+        content: '家族访谈需要归属到一个家族，请先创建家族。',
+        confirmText: '创建家族',
+        success: result => {
+          if (result.confirm) this.openCreate()
+        }
+      })
+    }
+    this.setData({ familyModal: 'interview' })
   },
 
-  // 家族编年志：把已记录的故事按事件年代汇编成册
-  goToChronicle() {
-    wx.navigateTo({ url: '/pages/chronicle/chronicle' })
-  }
 })

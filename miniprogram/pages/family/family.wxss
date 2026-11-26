@@ -1,0 +1,182 @@
+.family-page { padding: 32rpx; color: #30251c; }
+.heading { font-size: 46rpx; font-weight: 700; margin: 24rpx 0; }
+.card { background: #fff; border-radius: 20rpx; padding: 24rpx; margin: 24rpx 0; }
+.field { border-bottom: 1px solid #e8dace; padding: 20rpx 0; margin: 10rpx 0; }
+.byline { font-size: 28rpx; color: #6e5646; margin: 12rpx 0 24rpx; }
+.article { display: block; white-space: pre-wrap; line-height: 1.85; }
+.error { color: #a23220; margin-bottom: 20rpx; }
+.family-tools { display: flex; width: 100%; margin: 20rpx 0 24rpx; }
+.chronicle-entry { box-sizing: border-box; width: 100%; min-width: 0; margin: 0; padding: 0 24rpx; white-space: nowrap; font-size: 30rpx; color: #a0522d; background: #fff; border: 2rpx solid #d8c6ae; border-radius: 40rpx; }
+.chronicle-entry::after { border: 0; }
+.values-card { background: #fff; border-radius: 20rpx; padding: 28rpx; margin: 24rpx 0; }
+.values-head { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; margin-bottom: 24rpx; }
+.values-title { font-size: 34rpx; font-weight: 700; color: #2b2218; }
+.values-subtitle { margin-top: 8rpx; font-size: 24rpx; color: #6e6354; }
+.values-refresh { flex: 0 0 auto; white-space: nowrap; font-size: 26rpx; color: #a0522d; padding: 12rpx 0 12rpx 16rpx; }
+.values-wall { display: flex; flex-wrap: wrap; gap: 16rpx 20rpx; }
+.value-tag { background: #fbf7f0; border: 2rpx solid #e8ddcd; border-radius: 28rpx; padding: 12rpx 28rpx; color: #5b5145; }
+.value-tag.size-lg { font-size: 36rpx; color: #a0522d; border-color: #a0522d; font-weight: 600; }
+.value-tag.size-md { font-size: 32rpx; color: #8a5a33; }
+.value-tag.size-sm { font-size: 28rpx; }
+.value-empty { padding: 24rpx 0; text-align: center; font-size: 28rpx; color: #6e6354; }
+.value-pop { position: fixed; left: 0; right: 0; top: 0; bottom: 0; z-index: 100; }
+.value-pop-mask { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background: rgba(43,34,24,.45); }
+.value-pop-box { position: absolute; left: 0; right: 0; bottom: 0; box-sizing: border-box; background: #fbf7f0; border-radius: 32rpx 32rpx 0 0; padding: 40rpx 40rpx calc(40rpx + env(safe-area-inset-bottom)); }
+.value-pop-title { margin-bottom: 24rpx; font-size: 40rpx; font-weight: 700; color: #a0522d; }
+.value-quote { margin-bottom: 16rpx; padding: 24rpx; background: #fff; border-radius: 16rpx; font-size: 30rpx; line-height: 1.7; }
+.value-quote-src { margin-top: 12rpx; font-size: 26rpx; color: #6e6354; }
+
+/* 家族页：从功能列表升级为统一的家族档案卡片 */
+.family-page {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 36rpx 32rpx calc(48rpx + env(safe-area-inset-bottom));
+}
+.heading { color: #342b23; letter-spacing: 2rpx; }
+.family-page button {
+  color: #914927;
+  background: #fff;
+  border: 2rpx solid #d2ad82;
+  border-radius: 46rpx;
+  box-shadow: 0 6rpx 18rpx rgba(73,52,34,.06);
+}
+.family-page button[type='primary'] {
+  color: #fff;
+  background: linear-gradient(135deg, #a75a32, #8d4328);
+  border: 0;
+}
+.family-page button[disabled] { opacity: .52; box-shadow: none; }
+.family-page .card {
+  border: 1rpx solid rgba(151,115,82,.12);
+  border-radius: 26rpx;
+  padding: 30rpx 32rpx;
+  box-shadow: 0 10rpx 28rpx rgba(73,52,34,.07);
+}
+.family-page picker .card {
+  color: #59493c;
+  background: linear-gradient(135deg, #fff, #f5ecdf);
+}
+.chronicle-entry {
+  height: 88rpx;
+  line-height: 84rpx;
+  color: #914927;
+  border-color: #d2ad82;
+  background: rgba(255,255,255,.9);
+  box-shadow: 0 7rpx 20rpx rgba(73,52,34,.06);
+}
+.values-card {
+  border: 1rpx solid rgba(151,115,82,.12);
+  border-radius: 28rpx;
+  background: linear-gradient(155deg, #fff, #f8f1e8);
+  box-shadow: 0 12rpx 32rpx rgba(73,52,34,.07);
+}
+.values-title { color: #342b23; }
+.values-refresh { color: #914927; font-weight: 600; }
+.value-tag {
+  border-color: #decab1;
+  background: #f6eee3;
+}
+.field {
+  box-sizing: border-box;
+  min-height: 82rpx;
+  padding: 20rpx 4rpx;
+  color: #342b23;
+  border-color: #ddcdbb;
+}
+.article {
+  padding: 36rpx;
+  border: 1rpx solid rgba(151,115,82,.12);
+  border-radius: 26rpx;
+  background: #fff;
+  box-shadow: 0 10rpx 28rpx rgba(73,52,34,.07);
+}
+.value-pop-mask { background: rgba(37,30,24,.56); }
+.value-pop-box { background: #faf7f1; box-shadow: 0 -20rpx 60rpx rgba(37,30,24,.18); }
+
+/* 采访原文：提问与回答分色展示，保留口述史脉络 */
+.transcript {
+  margin: 28rpx 0;
+  padding: 30rpx;
+  border: 1rpx solid rgba(151,115,82,.12);
+  border-radius: 26rpx;
+  background: #f9f5ee;
+  box-shadow: 0 10rpx 28rpx rgba(73,52,34,.06);
+}
+.transcript-title { margin-bottom: 24rpx; font-size: 36rpx; font-weight: 700; color: #342b23; }
+.transcript-item { max-width: 88%; margin-bottom: 22rpx; }
+.transcript-item.user { margin-left: auto; }
+.transcript-role { margin-bottom: 8rpx; font-size: 24rpx; color: #7a6b5c; }
+.transcript-item.user .transcript-role { text-align: right; }
+.transcript-text {
+  padding: 22rpx 26rpx;
+  border-radius: 22rpx 22rpx 22rpx 6rpx;
+  background: #fff;
+  color: #342b23;
+  font-size: 30rpx;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+.transcript-item.user .transcript-text {
+  color: #fff;
+  background: linear-gradient(135deg, #a75a32, #8d4328);
+  border-radius: 22rpx 22rpx 6rpx 22rpx;
+}
+.transcript-empty { padding: 30rpx 0; text-align: center; font-size: 28rpx; color: #75695c; }
+
+/* 家族故事详情操作分层：返回、阅读、常用操作、原文展开互不挤占 */
+.family-page .story-back {
+  display: inline-block;
+  width: auto;
+  min-width: 0;
+  height: 68rpx;
+  line-height: 64rpx;
+  margin: 0 0 28rpx;
+  padding: 0 24rpx;
+  font-size: 27rpx;
+  font-weight: 500;
+  color: #746454;
+  background: rgba(255,255,255,.72);
+  border: 1rpx solid #dfd1c0;
+  border-radius: 34rpx;
+  box-shadow: none;
+}
+.story-reading-head { padding: 0 8rpx; }
+.story-reading-head .heading { margin-bottom: 10rpx; }
+.story-reading-head .byline { margin-bottom: 30rpx; }
+.story-action-panel {
+  margin: 30rpx 0;
+  padding: 24rpx;
+  border: 1rpx solid rgba(151,115,82,.12);
+  border-radius: 26rpx;
+  background: rgba(255,255,255,.78);
+  box-shadow: 0 10rpx 28rpx rgba(73,52,34,.055);
+}
+.story-action-row { display: flex; width: 100%; gap: 18rpx; }
+.family-page .story-action {
+  flex: 1;
+  min-width: 0;
+  height: 84rpx;
+  line-height: 80rpx;
+  margin: 0;
+  padding: 0 12rpx;
+  white-space: nowrap;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+.family-page .story-transcript-toggle {
+  width: 100%;
+  height: 76rpx;
+  line-height: 72rpx;
+  margin: 18rpx 0 0;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  color: #6f5d4d;
+  background: #f4ece1;
+  border: 0;
+  box-shadow: none;
+}
+
+@media (max-width: 340px) {
+  .story-action-row { flex-direction: column; }
+  .family-page .story-action { width: 100%; flex: none; }
+}

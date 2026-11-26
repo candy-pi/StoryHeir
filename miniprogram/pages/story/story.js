@@ -403,6 +403,12 @@ Page({
   // 分享到家族群：带 id 让家人也能打开看
   onShareAppMessage() {
     const s = this.data.story || {}
+    if (s.familyId && s.familyStoryId) {
+      return {
+        title: s.title || '我们家的故事',
+        path: `/pages/family/family?familyId=${encodeURIComponent(s.familyId)}&storyId=${encodeURIComponent(s.familyStoryId)}`
+      }
+    }
     const id = s._id ? `?id=${s._id}` : ''
     return {
       title: s.title || '我们家的故事',

@@ -27,4 +27,60 @@ function call(fnKey, data = {}) {
     })
 }
 
-module.exports = { call }
+function streamChat(data, onDelta) {
+  return new Promise((resolve, reject) => {
+    let pendingLine = ''
+    let finished = false
+
+    wx.cloud.callHTTPFunction({
+      name: 'chatStream',
+      path: '/chat',
+      method: 'post',
+      header: { 'Content-Type': 'application/json' },
+      data,
+      enableChunked: true,
+
+      onChunkedReceived({ data: chunk }) {
+        if (finished) return
+
+        try {
+          for (const byte of new Uint8Array(chunk)) {
+            if (byte !== 10) {
+              pendingLine += '%' + byte.toString(16).padStart(2, '0')
+              continue
+            }
+
+            const line = decodeURIComponent(pendingLine)
+            pendingLine = ''
+            if (!line.startsWith('data:')) continue
+
+            const event = JSON.parse(line.slice(5))
+            if (event.error) throw new Error(event.error)
+            if (event.done === true) {
+              finished = true
+              resolve()
+              return
+            }
+            if (typeof event.delta === 'string') onDelta(event.delta)
+          }
+        } catch (error) {
+          finished = true
+          reject(error)
+        }
+      },
+
+      success({ statusCode }) {
+        if (finished) return
+        finished = true
+        reject(new Error(`流式回复未收到结束标记（HTTP ${statusCode}）`))
+      },
+
+      fail(error) {
+        finished = true
+        reject(error)
+      }
+    })
+  })
+}
+
+module.exports = { call, streamChat }

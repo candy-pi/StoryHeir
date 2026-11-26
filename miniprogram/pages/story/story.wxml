@@ -15,6 +15,7 @@
 
 <!-- 故事展示页 -->
 <view class="page-pad safe-bottom story" wx:if="{{story}}">
+  <navigator wx:if="{{story._id && !story.familyStoryId && !editing}}" class="btn-secondary" url="/pages/family/family?sourceId={{story._id}}&familyId={{story.familyId}}">发布</navigator>
 
   <!-- 编辑模式：只改标题与正文，其余隐藏聚焦 -->
   <block wx:if="{{editing}}">

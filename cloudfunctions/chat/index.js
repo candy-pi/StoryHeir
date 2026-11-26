@@ -131,7 +131,7 @@ async function askAboutNewPhoto(photoFileID, recentText, apiKey, vlModel) {
 // 后续轮次生成提问。
 // feedback 非空表示本次是"重生成"：把 Validator 的改进要求并入 system（而非塞进 history），
 // 保持对话结构干净——末条仍是老人的 user 回答，Interviewer 自然接话。
-async function generateText(history, apiKey, model, feedback, photoClues, resume) {
+function buildTextMessages(history, feedback, photoClues, resume) {
   let sys = feedback
     ? SYSTEM_PROMPT + `\n\n【本次重生成要求】刚才那句提问不够好：${feedback}。请重新给出一个更合适的一句话提问。`
     : SYSTEM_PROMPT
@@ -146,7 +146,14 @@ async function generateText(history, apiKey, model, feedback, photoClues, resume
   } else {
     history.forEach(h => messages.push({ role: h.role, content: h.text }))
   }
-  return callLLM(apiKey, model, messages, 0.8, { thinking: { type: 'disabled' } })
+  return messages
+}
+
+async function generateText(history, apiKey, model, feedback, photoClues, resume) {
+  const messages = buildTextMessages(history, feedback, photoClues, resume)
+  return callLLM(apiKey, model, messages, 0.8, {
+    thinking: { type: 'disabled' }
+  })
 }
 
 // 解析 Validator 的 JSON：剥离 ```json 包裹 + 正则兜底截取 {...}；
@@ -251,3 +258,4 @@ exports.main = async (event) => {
     return { code: 1, message: 'AI 暂时没有回应，稍后再试' }
   }
 }
+exports.buildTextMessages = buildTextMessages

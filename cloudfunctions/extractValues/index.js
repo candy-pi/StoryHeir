@@ -1,18 +1,19 @@
-// extractValues 云函数：遍历该用户的家族故事 → 抽取家风价值观 → 归并落库
-// 入参 {}（只读当前 OPENID 的 story）
+// extractValues 云函数：遍历指定家族的已发布故事 → 抽取家风 → 按家族落库
+// 入参 { familyId }，仅家族成员可执行
 // 返回 { code, data:{ values:[{ value, count, quotes, sources }] } }
 // 家风：老人话里"做人要诚信""吃亏是福"这类可传承的处世之道，从故事正文里提炼
 
 const cloud = require('wx-server-sdk')
 // Node 16 运行时没有全局 fetch，引入 node-fetch 补齐（v2 支持 CommonJS require）
 const fetch = require('node-fetch')
+const { createHash } = require('crypto')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 
 // 最近 N 篇参与提炼：家风看重代表性，取最近 30 篇足够，同时控制 token
 const MAX_STORY = 30
 
-const SYSTEM = `你是家族家风标注者。对下面每一篇家族故事，判断它体现了哪些"家风"——值得传给后代的处世之道。
+const SYSTEM = `你是家族家风标注者。对下面每一篇家族故事，判断它体现了哪些"家风"——故事人物表现出的、值得传给后代的精神品质与处世之道。
 
 要求：
 - 每篇给 0-2 个家风；没有明确体现就不给，不硬凑。
@@ -25,12 +26,12 @@ const SYSTEM = `你是家族家风标注者。对下面每一篇家族故事，�
 [{ "value":"知恩图报", "quote":"做人不能忘本", "storyId":"篇A的id" }]`
 
 // 分页拉取当前用户全部 story（云函数端单次最多 20 条，循环累加到拉空）
-async function fetchAllStories(openid) {
+async function fetchAllStories(familyId) {
   const PAGE = 20
   let all = [], skip = 0
   while (true) {
-    const res = await db.collection('story').where({ _openid: openid })
-      .orderBy('createdAt', 'desc')
+    const res = await db.collection('familyStories').where({ familyId })
+      .orderBy('publishedAt', 'desc')
       .skip(skip).limit(PAGE).get()
     all = all.concat(res.data)
     if (res.data.length < PAGE) break
@@ -88,20 +89,34 @@ async function extract(stories, apiKey, model) {
   return parseValuesJson(raw)
 }
 
-exports.main = async () => {
+exports.main = async event => {
   const apiKey = process.env.DASHSCOPE_API_KEY
   const model = process.env.DASHSCOPE_MODEL || 'glm-5.2'
   if (!apiKey) return { code: 1, message: '未配置 DASHSCOPE_API_KEY' }
 
   const openid = cloud.getWXContext().OPENID
+  const familyId = typeof event?.familyId === 'string' ? event.familyId.trim() : ''
+  if (!openid || !familyId) return { code: 1, message: '家族请求无效' }
+  try {
+    const family = (await db.collection('families').doc(familyId).get()).data
+    if (!family || !Array.isArray(family.members) || !family.members.includes(openid)) {
+      return { code: 1, message: '请先加入这个家族' }
+    }
+  } catch (_) {
+    return { code: 1, message: '家族不存在或无权访问' }
+  }
   let stories
   try {
-    stories = await fetchAllStories(openid)
+    stories = await fetchAllStories(familyId)
   } catch (e) {
     console.error('[extractValues] 读 story 失败', e)
     return { code: 1, message: '读取家族故事失败，请先建 story 集合并开权限' }
   }
   if (!stories.length) {
+    try {
+      const old = await db.collection('familyValue').where({ familyId }).get()
+      await Promise.all(old.data.map(item => db.collection('familyValue').doc(item._id).remove()))
+    } catch (_) {}
     return { code: 0, data: { values: [], message: '还没有家族故事，先记录几段家事再来提炼家风' } }
   }
 
@@ -148,16 +163,18 @@ exports.main = async () => {
   // 调试日志：刷新后在云开发控制台→云函数→日志可看，用于确认是否真的重算
   console.log('[extractValues] 标注', raw.length, '条 → 过滤后', values.length, '条', values.map(v => v.value + '(' + v.count + ')'))
 
-  // 清旧重写：先删该用户旧 familyValue，再批量写新值（避开增量去重复杂度）
+  // 清旧重写：仅替换当前家族的家风，不影响用户加入的其他家族。
   try {
-    const old = await db.collection('familyValue').where({ _openid: openid }).get()
+    const old = await db.collection('familyValue').where({ familyId }).get()
     await Promise.all(old.data.map(d => db.collection('familyValue').doc(d._id).remove()))
     await Promise.all(values.map(v =>
-      db.collection('familyValue').add({ data: { _openid: openid, ...v, createdAt: db.serverDate() } })
+      db.collection('familyValue').doc(
+        createHash('sha256').update(`${familyId}:${v.value}`).digest('hex').slice(0, 32)
+      ).set({ data: { familyId, ...v, createdAt: db.serverDate() } })
     ))
   } catch (e) {
     console.error('[extractValues] 落库失败', e)
-    // 落库失败不影响把本次结果返回给前端展示
+    return { code: 1, message: '家风保存失败，请稍后重试' }
   }
 
   if (!values.length) {

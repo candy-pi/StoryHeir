@@ -1,51 +1,37 @@
 <!-- 首页：产品调性 + 家风墙 + 访谈主入口 + 家族故事列表 -->
 <view class="page-pad safe-bottom home">
   <view class="hero">
-    <view class="hero-mark"><view class="seal">传</view></view>
-    <text class="title-xl">传家志</text>
+    <view class="hero-mark"><view class="seal">忆</view></view>
+    <text class="title-xl">家忆录</text>
     <text class="slogan">留住爷爷奶奶的故事</text>
     <text class="desc">AI 记者陪你和家人聊老照片，把口口相传的往事，变成可以传下去的家族故事书。</text>
   </view>
 
-  <!-- 家风墙：从故事里提炼的价值观，标签随出现频次变大；加载完必显示，空态有刷新引导 -->
-  <view class="values-card" wx:if="{{valuesLoaded}}">
-    <view class="values-head">
-      <text class="values-title">我们家的家风</text>
-      <view class="values-refresh" hover-class="press-down" bindtap="onRefreshValues">刷新家风</view>
-    </view>
-    <view class="values-wall" wx:if="{{values.length}}">
-      <view class="value-tag size-{{item.sizeClass}}" wx:for="{{values}}" wx:key="value"
-            hover-class="press-down" bindtap="onTapValue" data-idx="{{index}}">
-        {{item.value}}
-      </view>
-    </view>
-    <view class="value-empty" wx:elif="{{valuesLoaded}}">还没提炼出家风，先记录几段家事</view>
-  </view>
-
-  <!-- 首次加载骨架：列表未就绪前显示占位，避免空白像卡死 -->
-  <view class="stories" wx:if="{{loading}}">
-    <view class="section-head">
-      <text class="section-title">我们的家族故事</text>
+  <view class="stories" wx:if="{{familyLoading}}">
+    <view class="section-head family-head">
+      <text class="section-title family-title">我的家族</text>
     </view>
     <view class="skel skel-story" wx:for="{{[1,2,3]}}" wx:key="*this"></view>
   </view>
 
-  <!-- 家族故事列表：可回看已记录的故事 -->
-  <view class="stories" wx:elif="{{stories.length}}">
-    <view class="section-head">
-      <text class="section-title">我们的家族故事</text>
-      <view class="chron-link" hover-class="press-down" bindtap="goToChronicle">编年志 →</view>
+  <view class="stories" wx:else>
+    <view class="section-head family-head">
+      <text class="section-title family-title">我的家族</text>
+      <view class="family-actions">
+        <button class="family-action" bindtap="openCreate">创建家族</button>
+        <button class="family-action" bindtap="openJoin">加入家族</button>
+      </view>
     </view>
-    <view class="story-item" wx:for="{{stories}}" wx:key="_id" hover-class="press-down" bindtap="goToStory" data-id="{{item._id}}">
-      <view class="story-item-title">{{item.title}}</view>
-      <view class="story-item-meta">{{item.timeText}} · 由 AI 记者整理</view>
+    <view class="story-item family-item" wx:for="{{families}}" wx:key="_id" hover-class="press-down" bindtap="openFamily" data-id="{{item._id}}">
+      <view class="family-item-main">
+        <view class="story-item-title">{{item.name}}</view>
+        <view class="story-item-meta">查看家族故事 →</view>
+      </view>
+      <button wx:if="{{item.canDelete}}" class="family-delete" catchtap="deleteFamily"
+        data-id="{{item._id}}" data-name="{{item.name}}" aria-label="删除家族">🗑</button>
     </view>
-    <!-- 开发期 Demo 入口：常驻，点一次按标题去重载入示例故事；上线前移除 -->
-    <view class="demo-link" hover-class="press-down" bindtap="loadDemo">再载入几段示例故事 →</view>
+    <view class="family-empty" wx:if="{{!families.length}}">当前还未创建家族~</view>
   </view>
-
-  <!-- 空态：引导载入示例，方便首次体验与 Demo -->
-  <view class="demo-link" wx:else hover-class="press-down" bindtap="loadDemo">还没有故事 · 载入一段示例看看 →</view>
 
   <view class="entry">
     <button class="btn-primary" bindtap="goToInterview">开始一段家族访谈</button>
@@ -53,15 +39,24 @@
   </view>
 </view>
 
-<!-- 家风详情弹层：点标签看原句出处 -->
-<view class="value-pop" wx:if="{{valuePop}}">
-  <view class="value-pop-mask" bindtap="closeValuePop"></view>
-  <view class="value-pop-box">
-    <view class="value-pop-title">{{valuePop.value}}</view>
-    <view class="value-quote" wx:for="{{valuePop.quotes}}" wx:key="text">
-      "{{item.text}}"
-      <view class="value-quote-src" wx:if="{{item.title}}">—— 出自《{{item.title}}》</view>
-    </view>
-    <button class="btn-primary" hover-class="press-down" bindtap="closeValuePop">知道了</button>
+<view class="family-modal" wx:if="{{familyModal}}">
+  <view class="family-modal-mask" bindtap="closeFamilyModal"></view>
+  <view class="family-modal-box">
+    <block wx:if="{{familyModal === 'create'}}">
+      <view class="family-modal-title">创建家族</view>
+      <input class="family-input" maxlength="40" placeholder="请输入家族名称" value="{{familyName}}" bindinput="onFamilyNameInput" focus />
+      <button class="btn-primary" bindtap="createFamily">创建</button>
+    </block>
+    <block wx:elif="{{familyModal === 'join'}}">
+      <view class="family-modal-title">加入家族</view>
+      <input class="family-input" maxlength="64" placeholder="请输入家族ID" value="{{familyIdInput}}" bindinput="onFamilyIdInput" focus />
+      <button class="btn-primary" bindtap="joinFamily">加入</button>
+    </block>
+    <block wx:else>
+      <view class="family-modal-title">选择访谈所属家族</view>
+      <view class="family-choice" wx:for="{{families}}" wx:key="_id" bindtap="chooseInterviewFamily" data-id="{{item._id}}">{{item.name}}</view>
+    </block>
+    <view class="family-modal-cancel" bindtap="closeFamilyModal">取消</view>
   </view>
 </view>
+

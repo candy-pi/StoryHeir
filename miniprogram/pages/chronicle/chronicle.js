@@ -1,8 +1,9 @@
 // 家族编年志：把多篇家族故事按事件年代汇编成册
-// 纯前端逻辑：分页拉全部 story → 按 era(事件年代) 归一化排序 → 按年代分章 → 书的形态展示
+// 通过 family 云函数读取当前家族故事，成员权限在云端校验。
 // era 由 genStory 抽取（四位年份）；旧数据无 era 则扫正文历史时期词兜底定位（不回退收录年）
 
-const db = wx.cloud.database()
+const api = require('../../utils/api')
+const call = (action, data) => api.call('family', { action, ...data })
 
 // 年代中文标签；2000 年后中文称呼不统一且易歧义，统一改阿拉伯数字更直观
 const DECADE_LABEL = {
@@ -19,48 +20,19 @@ Page({
     valuesText: ''     // 家风关键词拼接，封面展示；空则不显示家风行
   },
 
-  onLoad() {
+  onLoad(options) {
+    this.familyId = (options && options.familyId) || ''
+    if (!this.familyId) {
+      this.setData({ ready: true, empty: true })
+      return
+    }
     this.loadChronicle()
-    this.loadValues()
   },
 
   // 下拉刷新：补了新故事后，老人不必退出重进，下拉即重新汇编
   async onPullDownRefresh() {
     await this.loadChronicle()
-    await this.loadValues()
     wx.stopPullDownRefresh()
-  },
-
-  // 拉家风（首页已提炼，编年志封面一行展示）
-  async loadValues() {
-    try {
-      const res = await db.collection('familyValue')
-        .orderBy('count', 'desc')
-        .limit(8)
-        .get()
-      this.setData({ valuesText: res.data.map(v => v.value).join(' · ') })
-    } catch (e) {
-      // 集合未建或权限未开时静默
-    }
-  },
-
-  // 分页拉取全部故事（小程序端单次最多 20 条，循环累加到拉空）
-  async fetchAll() {
-    const PAGE = 20
-    let all = [], skip = 0
-    while (true) {
-      const res = await db.collection('story')
-        .orderBy('createdAt', 'desc')
-        .skip(skip)
-        .limit(PAGE)
-        .get()
-      all = all.concat(res.data)
-      if (res.data.length < PAGE) break
-      skip += PAGE
-      // 兜底防异常数据导致死循环
-      if (skip > 500) break
-    }
-    return all
   },
 
   // 从 era 归一化出一个年份，用于时间线定位与排序
@@ -132,7 +104,10 @@ Page({
 
   async loadChronicle() {
     try {
-      const list = await this.fetchAll()
+      const result = await call('chronicle', { familyId: this.familyId })
+      const list = result.stories || []
+      const values = (result.values || []).slice().sort((a, b) => (b.count || 0) - (a.count || 0))
+      this.setData({ valuesText: values.slice(0, 8).map(value => value.value).join(' · ') })
       if (!list.length) {
         this.setData({ ready: true, empty: true })
         return
@@ -197,7 +172,7 @@ Page({
   },
 
   goToStory(e) {
-    wx.navigateTo({ url: `/pages/story/story?id=${e.currentTarget.dataset.id}` })
+    wx.navigateTo({ url: `/pages/family/family?familyId=${encodeURIComponent(this.familyId)}&storyId=${encodeURIComponent(e.currentTarget.dataset.id)}` })
   },
 
   // 分享整本编年志到家族群，家人打开可看全册
@@ -205,7 +180,7 @@ Page({
     const count = this.data.book ? this.data.book.count : 0
     return {
       title: count ? `我们的家族编年志 · 共 ${count} 篇` : '我们的家族编年志',
-      path: '/pages/chronicle/chronicle'
+      path: `/pages/chronicle/chronicle?familyId=${encodeURIComponent(this.familyId)}`
     }
   },
 

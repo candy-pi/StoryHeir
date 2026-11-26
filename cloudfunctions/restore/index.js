@@ -85,6 +85,8 @@ exports.main = async (event) => {
 
   try {
     const story = (await db.collection('story').doc(storyId).get()).data
+    const { OPENID } = cloud.getWXContext()
+    if (!OPENID || story?._openid !== OPENID) return { code: 1, message: '只有原作者可以操作个人故事' }
     if (!story) return { code: 1, message: '故事不存在' }
     if (!story.photoFileID) return { code: 1, message: '这个故事没有老照片' }
 

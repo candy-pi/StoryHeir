@@ -1,0 +1,79 @@
+<view class="family-page">
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <view wx:if="{{reading}}">
+    <button class="story-back" bindtap="closeStory">← 返回家族故事</button>
+    <view class="story-reading-head">
+      <view class="heading">{{reading.title}}</view>
+      <view class="byline">{{reading.narratorName}}口述 · {{reading.reporterName}}采访</view>
+    </view>
+    <text class="article" selectable>{{reading.content}}</text>
+    <view class="story-action-panel">
+      <view class="story-action-row">
+        <button class="story-action" bindtap="listen" disabled="{{busy}}">♫ 朗读故事</button>
+        <button class="story-action" open-type="share">↗ 分享给家人</button>
+      </view>
+      <button class="story-transcript-toggle" bindtap="toggleTranscript">
+        {{showTranscript ? '收起采访原文 ↑' : '查看采访原文 ↓'}}
+      </button>
+    </view>
+    <view class="transcript" wx:if="{{showTranscript}}">
+      <view class="transcript-title">采访原文</view>
+      <view class="transcript-empty" wx:if="{{!reading.interviewMessages.length}}">这篇故事暂无可查看的采访原文</view>
+      <view class="transcript-item {{item.role}}" wx:for="{{reading.interviewMessages}}" wx:key="index">
+        <view class="transcript-role">{{item.roleLabel}}</view>
+        <view class="transcript-text">{{item.text}}</view>
+      </view>
+    </view>
+  </view>
+  <block wx:else>
+    <view class="heading">家族故事</view>
+    <picker wx:if="{{families.length && !sourceId}}" range="{{families}}" range-key="name" bindchange="pickFamily" disabled="{{busy}}">
+      <view class="card">当前家族 · {{familyName}} ▾</view>
+    </picker>
+    <view wx:elif="{{familyId}}" class="card">当前家族 · {{familyName}}</view>
+    <view class="family-tools" wx:if="{{!sourceId && familyId}}">
+      <button class="chronicle-entry" bindtap="goToChronicle">查看家族编年史</button>
+    </view>
+    <view class="values-card" wx:if="{{!sourceId && familyId && valuesLoaded}}">
+      <view class="values-head">
+        <view>
+          <view class="values-title">我们的家风</view>
+          <view class="values-subtitle">从家族故事中提炼人物精神</view>
+        </view>
+        <view class="values-refresh" bindtap="refreshValues">刷新家风</view>
+      </view>
+      <view class="values-wall" wx:if="{{values.length}}">
+        <view class="value-tag size-{{item.sizeClass}}" wx:for="{{values}}" wx:key="value"
+          bindtap="onTapValue" data-idx="{{index}}">{{item.value}}</view>
+      </view>
+      <view class="value-empty" wx:else>还没提炼出家风，先发布几段家族故事</view>
+    </view>
+    <view wx:if="{{sourceId && familyId}}" class="card">
+      <view>发布到{{familyName}}</view>
+      <picker wx:if="{{people.length}}" range="{{people}}" range-key="name" bindchange="pickNarrator" disabled="{{busy}}">
+        <view class="field">{{narratorId ? selectedNarrator : '选择讲述人'}} ▾</view>
+      </picker>
+      <input class="field" placeholder="填写讲述人，如 奶奶 · 陈秀英" maxlength="40" value="{{narratorName}}" data-field="narratorName" bindinput="input" />
+      <input class="field" placeholder="你的采访署名" maxlength="40" value="{{reporterName}}" data-field="reporterName" bindinput="input" />
+      <button type="primary" bindtap="publish" disabled="{{busy || !canPublish}}">发布故事</button>
+    </view>
+    <view wx:if="{{familyId && !stories.length}}" class="card">还没有发布的家族故事</view>
+    <view wx:for="{{stories}}" wx:key="_id" class="card" data-id="{{item._id}}" bindtap="openStory">
+      <view>{{item.title}}</view>
+      <view class="byline">{{item.narratorName}}口述 · {{item.reporterName}}采访</view>
+    </view>
+    <button wx:if="{{more}}" bindtap="moreStories" disabled="{{busy}}">加载更多故事</button>
+  </block>
+</view>
+
+<view class="value-pop" wx:if="{{valuePop}}">
+  <view class="value-pop-mask" bindtap="closeValuePop"></view>
+  <view class="value-pop-box">
+    <view class="value-pop-title">{{valuePop.value}}</view>
+    <view class="value-quote" wx:for="{{valuePop.quotes}}" wx:key="text">
+      “{{item.text}}”
+      <view class="value-quote-src" wx:if="{{item.title}}">—— 出自《{{item.title}}》</view>
+    </view>
+    <button type="primary" bindtap="closeValuePop">知道了</button>
+  </view>
+</view>

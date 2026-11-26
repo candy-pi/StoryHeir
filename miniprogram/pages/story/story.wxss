@@ -319,3 +319,29 @@
   color: #6e6354;
   padding: 0 32rpx;
 }
+
+/* 故事页视觉精修 */
+.story-title { color: #342b23; letter-spacing: 1rpx; }
+.story-photo-box,
+.story-content,
+.graph-card,
+.contrib-card {
+  border: 1rpx solid rgba(151,115,82,.12);
+  box-shadow: 0 12rpx 32rpx rgba(73,52,34,.07);
+}
+.story-content { background: rgba(255,255,255,.96); }
+.btn-ghost {
+  color: #914927;
+  border-color: #b66b43;
+  box-shadow: 0 6rpx 18rpx rgba(73,52,34,.06);
+}
+.nick-input,
+.person-pick,
+.content-input,
+.type-btn {
+  border: 1rpx solid rgba(151,115,82,.1);
+  background: #f7f1e8;
+}
+.type-btn.on { background: linear-gradient(135deg, #a75a32, #8d4328); }
+.rel-popup-mask { background: rgba(37,30,24,.56); }
+.rel-popup-box { background: #faf7f1; box-shadow: 0 -20rpx 60rpx rgba(37,30,24,.18); }

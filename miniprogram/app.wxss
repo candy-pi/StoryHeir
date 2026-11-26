@@ -36,6 +36,16 @@ page {
   box-sizing: border-box;
   padding: 0 24rpx;
 }
+button[type='primary'] {
+  color: #fff;
+  background: linear-gradient(135deg, #a85b32 0%, #8e4428 100%);
+  box-shadow: 0 10rpx 24rpx rgba(113, 55, 31, .2);
+}
+button[type='primary'][disabled] {
+  color: rgba(255,255,255,.92);
+  background: #d6c9b8;
+  box-shadow: none;
+}
 .btn-primary[disabled] { background-color: #CBB89A; color: #FFFFFF; }
 
 /* 次按钮：描边样式，与主按钮区分层级 */
@@ -105,4 +115,63 @@ page {
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(350%); }
+}
+
+/* 2026 视觉系统：暖米纸张 + 深陶棕 + 少量鎏金。
+   保留适老大字与大点按区，仅统一视觉层级和操作反馈。 */
+page {
+  color: #2e2923;
+  background: #f6f2eb;
+}
+
+button,
+.btn-primary,
+.btn-secondary {
+  box-sizing: border-box;
+  transition: transform .16s ease, opacity .16s ease, box-shadow .16s ease;
+}
+button::after { border: 0; }
+button:active,
+.btn-primary:active,
+.btn-secondary:active {
+  transform: scale(.975);
+  opacity: .9;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #a85b32 0%, #8e4428 100%);
+  box-shadow: 0 10rpx 24rpx rgba(113, 55, 31, .2);
+  letter-spacing: 2rpx;
+}
+.btn-primary[disabled] {
+  background: #d6c9b8;
+  color: rgba(255,255,255,.92);
+  box-shadow: none;
+}
+.btn-secondary {
+  color: #914927;
+  background: rgba(255,255,255,.94);
+  border-color: #b66b43;
+  box-shadow: 0 6rpx 18rpx rgba(74, 54, 38, .08);
+}
+
+.card {
+  border: 1rpx solid rgba(151, 115, 82, .13);
+  box-shadow: 0 10rpx 30rpx rgba(73, 52, 34, .075);
+}
+
+input,
+textarea {
+  caret-color: #9b4f2d;
+}
+
+@media (min-width: 900px) {
+  .page-pad,
+  .family-page {
+    width: 100%;
+    max-width: 820px;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+  }
 }
