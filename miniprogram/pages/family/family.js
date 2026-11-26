@@ -188,6 +188,28 @@ Page({
     this.setData({ showTranscript: !this.data.showTranscript })
   },
 
+  deleteReading() {
+    const { reading, familyId, busy } = this.data
+    if (!reading?.canDelete || busy) return
+    wx.showModal({
+      title: '删除这篇故事？',
+      content: '故事及关联访谈删除后无法恢复。',
+      confirmText: '删除',
+      confirmColor: '#a23220',
+      success: result => {
+        if (!result.confirm) return
+        this.run(async () => {
+          const { sourceId } = await call('deleteStory', { familyId, familyStoryId: reading.storyId })
+          if (sourceId && wx.getStorageSync('lastStory')?._id === sourceId) wx.removeStorageSync('lastStory')
+          this.closeStory()
+          this.setData({ stories: this.data.stories.filter(item => item._id !== reading.storyId) })
+          wx.showToast({ title: '已删除', icon: 'success' })
+          await this.refreshFamilies(familyId)
+        })
+      }
+    })
+  },
+
   listen() {
     this.run(async () => {
       this.stopAudio()

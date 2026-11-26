@@ -193,6 +193,51 @@ const actions = {
     return { _id: id }
   },
 
+  async deleteStory(event, openid) {
+    const source = db.collection('story')
+    let sourceId
+    let familyId
+    let sharedId
+    if (event.familyStoryId) {
+      const family = await getFamily(event.familyId, openid)
+      familyId = family._id
+      sharedId = required(event.familyStoryId, '故事')
+      const { data: shared } = await stories.doc(sharedId).get()
+      if (shared?.familyId !== familyId || shared.interviewerOpenid !== openid) {
+        throw new Error('只有故事发布者可以删除')
+      }
+      const linked = await source.where({ familyId, familyStoryId: sharedId, _openid: openid }).limit(1).get()
+      sourceId = linked.data[0]?._id
+    } else {
+      sourceId = required(event.storyId, '故事')
+      const { data: draft } = await source.doc(sourceId).get()
+      if (draft?._openid !== openid) throw new Error('只有故事作者可以删除')
+      familyId = draft.familyId
+      if (familyId) {
+        sharedId = createHash('sha256').update(JSON.stringify([familyId, sourceId])).digest('hex').slice(0, 32)
+      }
+    }
+    let interviewId
+    if (sourceId) {
+      const { data } = await source.where({ _id: sourceId, _openid: openid }).limit(1).get()
+      const candidate = data[0]?.interviewId
+      const scope = data[0]?.familyId
+      if (typeof candidate === 'string' && candidate) {
+        const { data: records } = await db.collection('interview')
+          .where({ _id: candidate, _openid: openid }).limit(1).get()
+        if (records[0] && (!records[0].familyId || records[0].familyId === scope)) interviewId = candidate
+      }
+    }
+    const shared = sharedId && (await stories
+      .where({ _id: sharedId, familyId, interviewerOpenid: openid }).limit(1).get()).data[0]
+    await db.runTransaction(async transaction => {
+      if (shared) await transaction.collection('familyStories').doc(sharedId).remove()
+      if (interviewId) await transaction.collection('interview').doc(interviewId).remove()
+      if (sourceId) await transaction.collection('story').doc(sourceId).remove()
+    })
+    return { sourceId: sourceId || '' }
+  },
+
   async read(event, openid) {
     const family = await getFamily(event.familyId, openid)
     const { data: story } = await stories.doc(required(event.storyId, '故事')).get()
@@ -229,7 +274,8 @@ const actions = {
         text: message.text.trim()
       }))
     const { title, content, narratorName, reporterName } = story
-    return { title, content, narratorName, reporterName, interviewMessages }
+    return { title, content, narratorName, reporterName, interviewMessages,
+      canDelete: story.interviewerOpenid === openid }
   }
 }
 

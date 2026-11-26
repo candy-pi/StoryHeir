@@ -131,6 +131,23 @@ button,
   transition: transform .16s ease, opacity .16s ease, box-shadow .16s ease;
 }
 button::after { border: 0; }
+.story-delete-button,
+.family-page button.story-delete-button {
+  box-sizing: border-box;
+  width: auto;
+  max-width: 100%;
+  min-height: 80rpx;
+  margin: 24rpx auto 0;
+  padding: 0 32rpx;
+  line-height: 76rpx;
+  font-size: 28rpx;
+  color: #a23220;
+  background: #fbf1ed;
+  border: 2rpx solid #e7c8bd;
+  border-radius: 48rpx;
+  box-shadow: none;
+}
+.story-ops .story-delete-button { margin: 0; }
 button:active,
 .btn-primary:active,
 .btn-secondary:active {

@@ -104,7 +104,7 @@
     <!-- 故事操作：编辑 / 删除（仅创建者自己的故事可改可删；非创建者点会被权限拦截） -->
     <view class="story-ops">
       <view class="story-op" hover-class="press-down" bindtap="onEdit">编辑</view>
-      <view class="story-op danger" hover-class="press-down" bindtap="onDelete">删除</view>
+      <button class="story-delete-button" hover-class="press-down" bindtap="onDelete">删除</button>
     </view>
   </block>
 </view>

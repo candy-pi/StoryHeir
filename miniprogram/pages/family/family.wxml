@@ -24,6 +24,7 @@
         <view class="transcript-text">{{item.text}}</view>
       </view>
     </view>
+    <button wx:if="{{reading.canDelete}}" class="story-delete-button" bindtap="deleteReading" disabled="{{busy}}">删除故事</button>
   </view>
   <block wx:else>
     <view class="heading">家族故事</view>

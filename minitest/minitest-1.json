@@ -1,0 +1,586 @@
+{
+  "meta": {
+    "caseId": "3482c539-dbd8-4366-a7f3-334d9019508b",
+    "caseName": "minitest-1",
+    "remarks": "",
+    "version": "0.0.1",
+    "startTime": 1795681562463,
+    "endTime": 1795681617177,
+    "appid": "wx41f61ed9ef54614d",
+    "casePath": "",
+    "caseType": "normal",
+    "commonParams": [
+      {
+        "key": "1795681617190",
+        "name": "",
+        "value": ""
+      }
+    ]
+  },
+  "env": {
+    "wxapplibVersion": "3.18.0",
+    "devtoolsVersion": "2.02.2609250",
+    "openid": "o6zAJszFf6aYwhlwW37bMqrHfyWw",
+    "entry": {
+      "path": "pages/index/index",
+      "query": "",
+      "scene": 1001
+    },
+    "mock": [
+      "none"
+    ],
+    "maxWaitFor": 10000,
+    "ignoreSelectors": [],
+    "mockAPIs": [],
+    "cleanCache": [
+      "none"
+    ],
+    "groupTouch": false,
+    "replaySetting": {
+      "screenshot": "none"
+    },
+    "simulatorType": "wechat",
+    "device": "iPhone 12/13 (Pro)",
+    "recordAPIs": []
+  },
+  "commands": [
+    {
+      "layer": "tool",
+      "commandType": "operate",
+      "command": "startRecord",
+      "waitfor": 0,
+      "timeStamp": 1795681562463,
+      "desc": ""
+    },
+    {
+      "tagName": "view",
+      "command": "touchstart",
+      "target": "/view/view[2]/view[2]/view/view[1]",
+      "value": null,
+      "path": "pages/index/index",
+      "text": "二根",
+      "eventData": {
+        "detail": {},
+        "changedTouches": [
+          {
+            "clientX": 173.07501220703125,
+            "clientY": 399.21246337890625,
+            "force": 1,
+            "pageX": 173.07501220703125,
+            "pageY": 399.21246337890625,
+            "screenX": 1399.2000732421875,
+            "screenY": 607.2000122070312
+          }
+        ],
+        "touches": [
+          {
+            "clientX": 173.07501220703125,
+            "clientY": 399.21246337890625,
+            "force": 1,
+            "pageX": 173.07501220703125,
+            "pageY": 399.21246337890625,
+            "screenX": 1399.2000732421875,
+            "screenY": 607.2000122070312
+          }
+        ]
+      },
+      "targetCandidates": [
+        "/view/view[2]/view[2]/view/view[1]"
+      ],
+      "timeStamp": 9217,
+      "waitfor": 9217,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "view",
+      "command": "touchend",
+      "target": "/view/view[2]/view[2]/view/view[1]",
+      "value": null,
+      "path": "pages/index/index",
+      "text": "二根",
+      "eventData": {
+        "detail": {},
+        "changedTouches": [
+          {
+            "clientX": 173.07501220703125,
+            "clientY": 399.21246337890625,
+            "pageX": 173.07501220703125,
+            "pageY": 399.21246337890625,
+            "screenX": 1399.2000732421875,
+            "screenY": 607.2000122070312
+          }
+        ],
+        "touches": []
+      },
+      "targetCandidates": [
+        "/view/view[2]/view[2]/view/view[1]"
+      ],
+      "timeStamp": 9322,
+      "waitfor": 105,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "view",
+      "command": "tap",
+      "target": "/view/view[2]/view[2]/view/view[1]",
+      "value": null,
+      "path": "pages/index/index",
+      "text": "二根",
+      "eventData": {
+        "detail": {
+          "x": 173.07501220703125,
+          "y": 399.21246337890625
+        },
+        "changedTouches": [
+          {
+            "clientX": 173.07501220703125,
+            "clientY": 399.21246337890625,
+            "force": 1,
+            "pageX": 173.07501220703125,
+            "pageY": 399.21246337890625,
+            "screenX": 1399.2000732421875,
+            "screenY": 607.2000122070312
+          }
+        ],
+        "touches": [
+          {
+            "clientX": 173.07501220703125,
+            "clientY": 399.21246337890625,
+            "force": 1,
+            "pageX": 173.07501220703125,
+            "pageY": 399.21246337890625,
+            "screenX": 1399.2000732421875,
+            "screenY": 607.2000122070312
+          }
+        ]
+      },
+      "targetCandidates": [
+        "/view/view[2]/view[2]/view/view[1]"
+      ],
+      "timeStamp": 9322,
+      "waitfor": 0,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "view",
+      "command": "touchstart",
+      "target": "/view/view[4]/view[2]",
+      "value": null,
+      "path": "pages/family/family",
+      "text": "二根口述 · 张三采访",
+      "eventData": {
+        "detail": {},
+        "changedTouches": [
+          {
+            "clientX": 178.18743896484375,
+            "clientY": 424.7375183105469,
+            "force": 1,
+            "pageX": 178.18743896484375,
+            "pageY": 424.7375183105469,
+            "screenX": 1404,
+            "screenY": 631.2000122070312
+          }
+        ],
+        "touches": [
+          {
+            "clientX": 178.18743896484375,
+            "clientY": 424.7375183105469,
+            "force": 1,
+            "pageX": 178.18743896484375,
+            "pageY": 424.7375183105469,
+            "screenX": 1404,
+            "screenY": 631.2000122070312
+          }
+        ]
+      },
+      "targetCandidates": [
+        "/view/view[4]/view[2]"
+      ],
+      "timeStamp": 21703,
+      "waitfor": 10000,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "view",
+      "command": "touchend",
+      "target": "/view/view[4]/view[2]",
+      "value": null,
+      "path": "pages/family/family",
+      "text": "二根口述 · 张三采访",
+      "eventData": {
+        "detail": {},
+        "changedTouches": [
+          {
+            "clientX": 178.18743896484375,
+            "clientY": 424.7375183105469,
+            "pageX": 178.18743896484375,
+            "pageY": 424.7375183105469,
+            "screenX": 1404,
+            "screenY": 631.2000122070312
+          }
+        ],
+        "touches": []
+      },
+      "targetCandidates": [
+        "/view/view[4]/view[2]"
+      ],
+      "timeStamp": 21815,
+      "waitfor": 112,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "view",
+      "command": "tap",
+      "target": "/view/view[4]/view[2]",
+      "value": null,
+      "path": "pages/family/family",
+      "text": "二根口述 · 张三采访",
+      "eventData": {
+        "detail": {
+          "x": 178.18743896484375,
+          "y": 424.7375183105469
+        },
+        "changedTouches": [
+          {
+            "clientX": 178.18743896484375,
+            "clientY": 424.7375183105469,
+            "force": 1,
+            "pageX": 178.18743896484375,
+            "pageY": 424.7375183105469,
+            "screenX": 1404,
+            "screenY": 631.2000122070312
+          }
+        ],
+        "touches": [
+          {
+            "clientX": 178.18743896484375,
+            "clientY": 424.7375183105469,
+            "force": 1,
+            "pageX": 178.18743896484375,
+            "pageY": 424.7375183105469,
+            "screenX": 1404,
+            "screenY": 631.2000122070312
+          }
+        ]
+      },
+      "targetCandidates": [
+        "/view/view[4]/view[2]"
+      ],
+      "timeStamp": 21815,
+      "waitfor": 0,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "",
+      "command": "scroll",
+      "target": "/",
+      "path": "pages/family/family",
+      "eventData": {
+        "scrollDetail": {
+          "scrollTop": 106.4000015258789,
+          "scrollLeft": 0
+        }
+      },
+      "targetCandidates": [],
+      "timeStamp": 23673,
+      "waitfor": 1858,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "",
+      "command": "scroll",
+      "target": "/",
+      "path": "pages/family/family",
+      "eventData": {
+        "scrollDetail": {
+          "scrollTop": 425.6000061035156,
+          "scrollLeft": 0
+        }
+      },
+      "targetCandidates": [],
+      "timeStamp": 24223,
+      "waitfor": 550,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "",
+      "command": "scroll",
+      "target": "/",
+      "path": "pages/family/family",
+      "eventData": {
+        "scrollDetail": {
+          "scrollTop": 744.7999877929688,
+          "scrollLeft": 0
+        }
+      },
+      "targetCandidates": [],
+      "timeStamp": 24872,
+      "waitfor": 649,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "",
+      "command": "scroll",
+      "target": "/",
+      "path": "pages/family/family",
+      "eventData": {
+        "scrollDetail": {
+          "scrollTop": 948,
+          "scrollLeft": 0
+        }
+      },
+      "targetCandidates": [],
+      "timeStamp": 25386,
+      "waitfor": 514,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "button",
+      "command": "touchstart",
+      "target": "button.story-transcript-toggle",
+      "value": null,
+      "path": "pages/family/family",
+      "text": "查看采访原文 ↓",
+      "eventData": {
+        "detail": {},
+        "changedTouches": [
+          {
+            "clientX": 228.3999481201172,
+            "clientY": 665.5875244140625,
+            "force": 1,
+            "pageX": 228.3999481201172,
+            "pageY": 1613.5875244140625,
+            "screenX": 1451.2000732421875,
+            "screenY": 857.6000366210938
+          }
+        ],
+        "touches": [
+          {
+            "clientX": 228.3999481201172,
+            "clientY": 665.5875244140625,
+            "force": 1,
+            "pageX": 228.3999481201172,
+            "pageY": 1613.5875244140625,
+            "screenX": 1451.2000732421875,
+            "screenY": 857.6000366210938
+          }
+        ]
+      },
+      "targetCandidates": [
+        "button.story-transcript-toggle",
+        ".story-transcript-toggle",
+        "/view/view/view[2]/button"
+      ],
+      "timeStamp": 26605,
+      "waitfor": 1219,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "button",
+      "command": "touchend",
+      "target": "button.story-transcript-toggle",
+      "value": null,
+      "path": "pages/family/family",
+      "text": "查看采访原文 ↓",
+      "eventData": {
+        "detail": {},
+        "changedTouches": [
+          {
+            "clientX": 228.3999481201172,
+            "clientY": 665.5875244140625,
+            "pageX": 228.3999481201172,
+            "pageY": 1613.5875244140625,
+            "screenX": 1451.2000732421875,
+            "screenY": 857.6000366210938
+          }
+        ],
+        "touches": []
+      },
+      "targetCandidates": [
+        "button.story-transcript-toggle",
+        ".story-transcript-toggle",
+        "/view/view/view[2]/button"
+      ],
+      "timeStamp": 26695,
+      "waitfor": 90,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "button",
+      "command": "tap",
+      "target": "button.story-transcript-toggle",
+      "value": null,
+      "path": "pages/family/family",
+      "text": "查看采访原文 ↓",
+      "eventData": {
+        "detail": {
+          "x": 228.3999481201172,
+          "y": 1613.5875244140625
+        },
+        "changedTouches": [
+          {
+            "clientX": 228.3999481201172,
+            "clientY": 665.5875244140625,
+            "force": 1,
+            "pageX": 228.3999481201172,
+            "pageY": 1613.5875244140625,
+            "screenX": 1451.2000732421875,
+            "screenY": 857.6000366210938
+          }
+        ],
+        "touches": [
+          {
+            "clientX": 228.3999481201172,
+            "clientY": 665.5875244140625,
+            "force": 1,
+            "pageX": 228.3999481201172,
+            "pageY": 1613.5875244140625,
+            "screenX": 1451.2000732421875,
+            "screenY": 857.6000366210938
+          }
+        ]
+      },
+      "targetCandidates": [
+        "button.story-transcript-toggle",
+        ".story-transcript-toggle",
+        "/view/view/view[2]/button"
+      ],
+      "timeStamp": 26695,
+      "waitfor": 0,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "",
+      "command": "scroll",
+      "target": "/",
+      "path": "pages/family/family",
+      "eventData": {
+        "scrollDetail": {
+          "scrollTop": 1054.4000244140625,
+          "scrollLeft": 0
+        }
+      },
+      "targetCandidates": [],
+      "timeStamp": 27310,
+      "waitfor": 615,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "",
+      "command": "scroll",
+      "target": "/",
+      "path": "pages/family/family",
+      "eventData": {
+        "scrollDetail": {
+          "scrollTop": 1373.5999755859375,
+          "scrollLeft": 0
+        }
+      },
+      "targetCandidates": [],
+      "timeStamp": 28386,
+      "waitfor": 1076,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "",
+      "command": "scroll",
+      "target": "/",
+      "path": "pages/family/family",
+      "eventData": {
+        "scrollDetail": {
+          "scrollTop": 1495.199951171875,
+          "scrollLeft": 0
+        }
+      },
+      "targetCandidates": [],
+      "timeStamp": 28797,
+      "waitfor": 411,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "timeStamp": 33303,
+      "waitfor": 4506,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "native",
+      "command": "navigateLeft",
+      "text": ""
+    },
+    {
+      "tagName": "",
+      "command": "scroll",
+      "target": "/",
+      "path": "pages/index/index",
+      "eventData": {
+        "scrollDetail": {
+          "scrollTop": 158.39999389648438,
+          "scrollLeft": 0
+        }
+      },
+      "targetCandidates": [],
+      "timeStamp": 34606,
+      "waitfor": 1303,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "",
+      "command": "scroll",
+      "target": "/",
+      "path": "pages/index/index",
+      "eventData": {
+        "scrollDetail": {
+          "scrollTop": 0,
+          "scrollLeft": 0
+        }
+      },
+      "targetCandidates": [],
+      "timeStamp": 35616,
+      "waitfor": 1010,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "timeStamp": 54714,
+      "waitfor": 10000,
+      "desc": "",
+      "layer": "tool",
+      "commandType": "operate",
+      "command": "stopRecord"
+    }
+  ]
+}

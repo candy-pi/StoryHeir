@@ -323,20 +323,22 @@ Page({
 
   // 删除故事：二次确认后删 story + 关联 interview，返回列表（onShow 自动刷新）
   onDelete() {
-    if (!this.storyId) return wx.showToast({ title: '请从故事列表打开', icon: 'none' })
     wx.showModal({
       title: '删除这个故事？',
       content: '删除后不可恢复，关联的访谈记录也会一并删除。',
       confirmText: '删除',
       confirmColor: '#b03a2e',
       success: async res => {
-        if (!res.confirm) return
+        if (!res.confirm || this._deletingStory) return
+        this._deletingStory = true
         wx.showLoading({ title: '删除中…', mask: true })
         try {
-          await db.collection('story').doc(this.storyId).remove()
-          // 关联访谈原文一并清掉（自己的可删；失败忽略，留 orphan 无害）
-          const ivId = this.data.story && this.data.story.interviewId
-          if (ivId) { try { await db.collection('interview').doc(ivId).remove() } catch (_) {} }
+          if (this.storyId) await api.call('family', { action: 'deleteStory', storyId: this.storyId })
+          const cached = wx.getStorageSync('lastStory')
+          if (cached && (this.storyId ? cached._id === this.storyId : !cached._id)) {
+            wx.removeStorageSync('lastStory')
+          }
+          this.setData({ story: null })
           wx.showToast({ title: '已删除', icon: 'success' })
           // 返回列表（onShow 自动刷新）；从分享打开无上一页时回首页
           const pages = getCurrentPages()
@@ -347,6 +349,7 @@ Page({
         } catch (e) {
           wx.showModal({ title: '删除失败', content: '只有故事作者能删除，或网络异常稍后再试', showCancel: false })
         } finally {
+          this._deletingStory = false
           wx.hideLoading()
         }
       }
